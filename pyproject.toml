@@ -1,0 +1,82 @@
+[project]
+name = "corebrain"
+version = "0.1.0"
+description = "SDK de Corebrain para consultas en lenguaje natural a bases de datos"
+readme = "README.md"
+authors = [
+    {name = "Rubén Ayuso", email = "ruben@globodain.com"}
+]
+license = {text = "MIT"}
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+requires-python = ">=3.8"
+dependencies = [
+    "httpx>=0.24.0",
+    "sqlalchemy>=2.0.0",
+    "pydantic>=2.0.0",
+    "cryptography>=40.0.0",
+    "python-dotenv>=1.0.0",
+    "typing-extensions>=4.4.0",
+    "requests>=2.28.0",
+    "asyncio>=3.4.3",
+    "psycopg2-binary>=2.9.0",  # En lugar de psycopg2 para evitar problemas de compilación
+    "mysql-connector-python>=8.0.23",
+    "pymongo>=4.4.0",
+]
+
+[project.optional-dependencies]
+postgres = ["psycopg2-binary>=2.9.0"]
+mongodb = ["pymongo>=4.4.0"]
+mysql = ["mysql-connector-python>=8.0.23"]
+all_db = [
+    "psycopg2-binary>=2.9.0",
+    "pymongo>=4.4.0",
+    "mysql-connector-python>=8.0.23",
+]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "mypy>=1.3.0",
+    "flake8>=6.0.0",
+]
+
+[tool.setuptools]
+packages = ["corebrain"]
+
+[project.urls]
+"Homepage" = "https://github.com/ceoweggo/Corebrain"
+"Bug Tracker" = "https://github.com/ceoweggo/Corebrain/issues"
+
+[project.scripts]
+corebrain = "corebrain.cli.__main__:main"
+
+[tool.black]
+line-length = 100
+target-version = ["py38"]
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["tests"]
+pythonpath = ["."]

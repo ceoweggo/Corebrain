@@ -2,6 +2,9 @@
 __pycache__/
 *.py[cod]
 *$py.class
+venv/
+.tofix/
+README-no-valid.md
 
 # C extensions
 *.so
