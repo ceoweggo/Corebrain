@@ -103,4 +103,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-Developed with ❤️ by [Rubén Ayuso]
+Developed with ❤️ by [Rubén Ayuso](https://github.com/ceoweggo)
