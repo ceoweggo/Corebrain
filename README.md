@@ -47,7 +47,7 @@ npm install
 ### Configuration
 
 1. Use `corebrain --configure` to start the configuration.
-2. Once configuration has been completed, copy config_id and reemplace in your example code (see 'examples' folder).
+2. Once configuration has been completed, copy the config_id and replace in your example code (see 'examples' folder).
 3. Run the example code in Python and enjoy!
 
 ### Basic Usage
@@ -69,7 +69,7 @@ git checkout pre-release
 npm install
 ```
 
-**Warning**: The pre-release version contains experimental features that may have bugs or unexpected behaviors. Not recommended for production environments.
+**Warning**: The pre-release version contains experimental features with bugs or unexpected behaviors. Not recommended for production environments.
 
 ## Contributing
 
@@ -90,7 +90,10 @@ Please read our [contribution guidelines](CONTRIBUTING.md) before you start.
 - **0.1.0**: Basic SQL operation. OpenAI connected. Authentication service Globodain SSO integrated. API Keys configuration integrated. 
 - **0.2.0**: NoSQL (MongoDB) fixed. API Key creation by command "Corebrain --configure". Functional version.
 - **0.3.0**: API deployment and integration at source. Functional version for third parties.
+...
 - **1.0.0**: First stable version with all features.
+
+You can see the full report at [Project Roadmap](https://github.com/users/ceoweggo/projects/4/views/2)
 
 ## License
 
