@@ -104,6 +104,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Email**: [ruben@globodain.com](mailto:ruben@globodain.com)
 - **Issues**: [Report a problem](https://github.com/ceoweggo/corebrain/issues)
 
----
-
-Developed with ❤️ by [Rubén Ayuso](https://github.com/ceoweggo)
