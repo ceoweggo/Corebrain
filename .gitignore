@@ -5,6 +5,7 @@ __pycache__/
 venv/
 .tofix/
 README-no-valid.md
+requirements.txt
 
 # C extensions
 *.so
