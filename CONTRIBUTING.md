@@ -138,10 +138,8 @@ Our maintainers follow semantic versioning (MAJOR.MINOR.PATCH):
 
 ## Getting Help
 
-<iframe src="https://discordapp.com/widget?id=1372220950338342992&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
-
 If you need help with anything:
-- Join our [Discord community](https://discord.gg/corebrain)
+- Join our [Discord community](https://discord.gg/m2AXjPn2yV)
 - Ask questions in the GitHub Discussions
 - Contact the maintainers at ruben@globodain.com
 
