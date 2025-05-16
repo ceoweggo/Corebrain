@@ -25,4 +25,20 @@ exclude_patterns = []
 
 # -- Options for HTML output -------------------------------------------------
 html_theme = 'alabaster'
+
+html_theme_options = {
+    'show_related': True,
+    'sidebar_width': '220px',
+}
+
+# Optional: add extra sidebar content
+html_sidebars = {
+    '**': [
+        'about.html',
+        'navigation.html',
+        'relations.html',  # next/prev links
+        'searchbox.html',
+    ]
+}
+
 html_static_path = ['_static']
