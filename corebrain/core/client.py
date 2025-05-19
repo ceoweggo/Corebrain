@@ -20,6 +20,7 @@ from pathlib import Path
 from datetime import datetime
 
 from corebrain.core.common import logger, CorebrainError
+from corebrain.cli.common import DEFAULT_API_URL # The API URL for running requests
 
 class Corebrain:
     """
@@ -1320,6 +1321,24 @@ class Corebrain:
             
         except Exception as e:
             raise CorebrainError(f"Error executing MongoDB query: {str(e)}")
+    
+    # Sends request to Corebrain-API to create API key
+    def create_api_key(api_token: str, name: str, level: str = "read") -> dict:
+        """
+        Create an API key using the backend API.
+        """
+        url = f"{DEFAULT_API_URL}/api-keys"
+        headers = {
+            "Authorization": f"Bearer {api_token}",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "name": name,
+            "level": level
+        }
+        response = requests.post(url, headers=headers, json=payload)
+        response.raise_for_status()
+        return response.json()
 
 
 def init(

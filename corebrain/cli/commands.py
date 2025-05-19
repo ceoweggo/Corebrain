@@ -14,6 +14,7 @@ from corebrain.cli.config import configure_sdk, get_api_credential
 from corebrain.cli.utils import print_colored
 from corebrain.config.manager import ConfigManager
 from corebrain.lib.sso.auth import GlobodainSSOAuth
+from corebrain.core.client import create_api_key # function that sends request for creating API key
 
 def main_cli(argv: Optional[List[str]] = None) -> int:
     """
@@ -51,6 +52,9 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
         parser.add_argument("--sso-url", help="Globodain SSO service URL")
         parser.add_argument("--login", action="store_true", help="Login via SSO")
         parser.add_argument("--test-auth", action="store_true", help="Test SSO authentication system")
+        parser.add_argument("--create", action="store_true", help="Create a new API Key")
+        parser.add_argument("--key-name", help="Name of the new API Key")
+        parser.add_argument("--key-level", choices=["read", "write", "admin"], default="read", help="Access level for the new API Key")
         
         args = parser.parse_args(argv)
         
@@ -158,12 +162,35 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
                 show_db_schema(api_key, args.config_id, api_url)
             elif args.extract_schema:
                 extract_schema_to_file(api_key, args.config_id, args.output_file, api_url)
+
+        # Creating the API key
+        if args.create:
+
+            if not args.token:
+                print_colored("You must provide an API token using --token", "yellow")
+                return 1
+
+            if not args.key_name:
+                print_colored("You must provide a name for the API Key using --key-name", "yellow")
+                return 1
+
+            try:
+                api_key = create_api_key(
+                    api_token=args.token,
+                    name=args.key_name,
+                    level=args.key_level
+                )
+                print_colored("API Key created successfully:", "green")
+                print(api_key)
+                return 0
+            except Exception as e:
+                print_colored(f"Failed to create API Key: {str(e)}", "red")
+                return 1
                 
         else:
             # If no option was specified, show help
             parser.print_help()
-            print_colored("\nTip: Use 'corebrain --login' to login via SSO.", "blue")
-        
+            print_colored("\nTip: Use 'corebrain --login' to login via SSO.", "blue")       
         return 0
     except Exception as e:
         print_colored(f"Error: {str(e)}", "red")
