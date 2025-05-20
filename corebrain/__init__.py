@@ -12,9 +12,9 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
 # Importaciones seguras (sin dependencias circulares)
-from corebrain.db.engines import get_available_engines
+from corebrain.core.db.engines import get_available_engines
 from corebrain.core.client import Corebrain
-from corebrain.config.manager import ConfigManager
+from corebrain.core.config.manager import ConfigManager
 
 # Exportación explícita de componentes públicos
 __all__ = [

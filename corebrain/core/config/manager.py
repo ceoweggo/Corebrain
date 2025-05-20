@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Dict, Any, List, Optional
 from cryptography.fernet import Fernet
 
-from corebrain.utils.serializer import serialize_to_json
+from corebrain.core.utils.serializer import serialize_to_json
 from corebrain.core.common import logger
 
 # Función para imprimir mensajes coloreados

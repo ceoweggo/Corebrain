@@ -16,7 +16,7 @@ try:
 except ImportError:
     pass
 
-from corebrain.db.connector import DatabaseConnector
+from corebrain.core.db.connector import DatabaseConnector
 
 class SQLConnector(DatabaseConnector):
     """Conector optimizado para bases de datos SQL"""

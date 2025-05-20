@@ -4,8 +4,8 @@ Conectores de bases de datos para diferentes motores.
 
 from typing import Dict, Any
 
-from corebrain.db.connectors.sql import SQLConnector
-from corebrain.db.connectors.mongodb import MongoDBConnector
+from corebrain.core.db.connectors.sql import SQLConnector
+from corebrain.core.db.connectors.mongodb import MongoDBConnector
 
 def get_connector(db_config: Dict[str, Any]):
     """

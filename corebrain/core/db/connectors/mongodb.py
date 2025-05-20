@@ -15,7 +15,7 @@ try:
 except ImportError:
     PYMONGO_AVAILABLE = False
 
-from corebrain.db.connector import DatabaseConnector
+from corebrain.core.db.connector import DatabaseConnector
 
 class MongoDBConnector(DatabaseConnector):
     """Conector optimizado para MongoDB"""

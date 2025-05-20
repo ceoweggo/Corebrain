@@ -12,7 +12,7 @@ from corebrain.cli.common import DEFAULT_API_URL, DEFAULT_SSO_URL, DEFAULT_PORT,
 from corebrain.cli.auth.sso import authenticate_with_sso
 from corebrain.cli.config import configure_sdk, get_api_credential
 from corebrain.cli.utils import print_colored
-from corebrain.config.manager import ConfigManager
+from corebrain.core.config.manager import ConfigManager
 from corebrain.lib.sso.auth import GlobodainSSOAuth
 
 def main_cli(argv: Optional[List[str]] = None) -> int:
@@ -145,7 +145,7 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
                 print_colored("Or use the 'corebrain --login' command to login via SSO.", "blue")
                 return 1
             
-            from corebrain.db.schema_file import show_db_schema, extract_schema_to_file
+            from corebrain.core.db.schema_file import show_db_schema, extract_schema_to_file
             
             # Execute the selected operation
             if args.configure:

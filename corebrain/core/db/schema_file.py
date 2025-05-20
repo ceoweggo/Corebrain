@@ -224,7 +224,7 @@ def extract_schema_to_file(api_key: str, config_id: Optional[str] = None, output
     try:
     # Importación explícita con try-except para manejar errores
         try:
-            from corebrain.config.manager import ConfigManager
+            from corebrain.core.config.manager import ConfigManager
         except ImportError as e:
             _print_colored(f"Error al importar ConfigManager: {e}", "red")
             return False
@@ -316,7 +316,7 @@ def show_db_schema(api_token: str, config_id: Optional[str] = None, api_url: Opt
     try:
         # Importación explícita con try-except para manejar errores
         try:
-            from corebrain.config.manager import ConfigManager
+            from corebrain.core.config.manager import ConfigManager
         except ImportError as e:
             _print_colored(f"Error al importar ConfigManager: {e}", "red")
             return False

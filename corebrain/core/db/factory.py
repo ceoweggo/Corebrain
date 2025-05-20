@@ -3,9 +3,9 @@ Fábrica de conectores de base de datos.
 """
 from typing import Dict, Any
 
-from corebrain.db.connector import DatabaseConnector
-from corebrain.db.connectors.sql import SQLConnector
-from corebrain.db.connectors.mongodb import MongoDBConnector
+from corebrain.core.db.connector import DatabaseConnector
+from corebrain.core.db.connectors.sql import SQLConnector
+from corebrain.core.db.connectors.mongodb import MongoDBConnector
 
 def get_connector(db_config: Dict[str, Any], timeout: int = 10) -> DatabaseConnector:
     """

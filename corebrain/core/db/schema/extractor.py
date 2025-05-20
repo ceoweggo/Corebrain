@@ -6,7 +6,7 @@ Extractor de esquemas de bases de datos independiente.
 
 from typing import Dict, Any, Optional, Callable
 
-from corebrain.utils.logging import get_logger
+from corebrain.core.utils.logging import get_logger
 
 logger = get_logger(__name__)
 

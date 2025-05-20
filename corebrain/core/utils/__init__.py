@@ -6,8 +6,8 @@ componentes del SDK, como serialización, cifrado y logging.
 """
 import logging
 
-from corebrain.utils.serializer import serialize_to_json, JSONEncoder
-from corebrain.utils.encrypter import (
+from .serializer import serialize_to_json, JSONEncoder
+from .encrypter import (
     create_cipher,
     generate_key,
     derive_key_from_password,

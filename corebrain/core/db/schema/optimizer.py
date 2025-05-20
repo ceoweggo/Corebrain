@@ -4,7 +4,7 @@ Componentes para optimización de esquemas de base de datos.
 import re
 from typing import Dict, Any, Optional
 
-from corebrain.utils.logging import get_logger
+from corebrain.core.utils.logging import get_logger
 
 logger = get_logger(__name__)
 

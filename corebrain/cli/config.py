@@ -11,11 +11,11 @@ from datetime import datetime
 from corebrain.cli.common import DEFAULT_API_URL, DEFAULT_SSO_URL
 from corebrain.cli.auth import authenticate_with_sso
 from corebrain.cli.utils import print_colored, ProgressTracker
-from corebrain.db.engines import get_available_engines
-from corebrain.config.manager import ConfigManager
+from corebrain.core.db.engines import get_available_engines
+from corebrain.core.config.manager import ConfigManager
 from corebrain.network.client import http_session
 from corebrain.core.test_utils import test_natural_language_query
-from corebrain.db.schema_file import extract_db_schema
+from corebrain.core.db.schema_file import extract_db_schema
 
 def get_api_credential(args_token: Optional[str] = None, sso_url: Optional[str] = None) -> Tuple[Optional[str], Optional[Dict[str, Any]], Optional[str]]:
     """

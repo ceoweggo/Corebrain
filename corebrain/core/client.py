@@ -176,7 +176,7 @@ class Corebrain:
         
         # Import ConfigManager dynamically to avoid circular dependency
         try:
-            from corebrain.config.manager import ConfigManager
+            from corebrain.core.config.manager import ConfigManager
             self.config_manager = ConfigManager()
         except ImportError as e:
             logger.error(f"Error importing ConfigManager: {e}")
