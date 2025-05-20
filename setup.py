@@ -1,5 +1,5 @@
 """
-Configuración de instalación para el paquete Corebrain.
+Installer configuration for Corebrain package.
 """
 
 from setuptools import setup, find_packages
@@ -7,7 +7,7 @@ from setuptools import setup, find_packages
 setup(
     name="corebrain",
     version="1.0.0",
-    description="SDK para consultas en lenguaje natural a bases de datos",
+    description="SDK for natural language ask to DB",
     author="Rubén Ayuso",
     author_email="ruben@globodain.com",
     packages=find_packages(),
