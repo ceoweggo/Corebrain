@@ -958,14 +958,14 @@ class Corebrain:
     
     def _generate_fallback_explanation(self, query, results):
         """
-        Genera una explicación de respaldo cuando falla la generación de explicaciones.
+        Generates a fallback explanation when the explanation generation fails.
         
         Args:
-            query: La consulta ejecutada
-            results: Los resultados obtenidos
+            query: The executed query
+            results: The obtained results
             
         Returns:
-            Explicación generada
+            Generated explanation
         """
         # Determinar si es SQL o MongoDB
         if isinstance(query, dict):
@@ -982,14 +982,14 @@ class Corebrain:
 
     def _generate_sql_explanation(self, sql_query, results):
         """
-        Genera una explicación simple para consultas SQL.
+        Generates a simple explanation for SQL queries.
         
         Args:
-            sql_query: La consulta SQL ejecutada
-            results: Los resultados obtenidos
+            sql_query: The executed SQL query
+            results: The obtained results
             
         Returns:
-            Explicación generada
+            Generated explanation
         """
         sql_lower = sql_query.lower() if isinstance(sql_query, str) else ""
         result_count = len(results) if isinstance(results, list) else (1 if results else 0)
@@ -1035,14 +1035,14 @@ class Corebrain:
 
     def _generate_mongodb_explanation(self, query, results):
         """
-        Genera una explicación simple para consultas MongoDB.
+        Generates a simple explanation for MongoDB queries.
         
         Args:
-            query: La consulta MongoDB ejecutada
-            results: Los resultados obtenidos
+            query: The executed MongoDB query
+            results: The obtained results
             
         Returns:
-            Explicación generada
+            Generated explanation
         """
         collection = query.get("collection", "la colección")
         operation = query.get("operation", "find")
@@ -1071,14 +1071,14 @@ class Corebrain:
 
     def _generate_generic_explanation(self, query, results):
         """
-        Genera una explicación genérica cuando no se puede determinar el tipo de consulta.
+        Generates a generic explanation when the query type cannot be determined.
         
         Args:
-            query: La consulta ejecutada
-            results: Los resultados obtenidos
+            query: The executed query
+            results: The obtained results
             
         Returns:
-            Explicación generada
+            Generated explanation
         """
         result_count = len(results) if isinstance(results, list) else (1 if results else 0)
         
