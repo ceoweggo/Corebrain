@@ -207,6 +207,27 @@ def extract_schema_with_lazy_init(api_key: str, db_config: Dict[str, Any], api_u
         _print_colored(f"Error al extraer esquema con cliente: {str(e)}", "red")
         # Como alternativa, usar extracción directa sin cliente
         return extract_db_schema_direct(db_config)
+from typing import Dict, Any
+
+def test_connection(db_config: Dict[str, Any]) -> bool:
+    try:
+        if db_config["type"].lower() == "sql":
+            # Code to test SQL connection...
+            pass
+        elif db_config["type"].lower() in ["nosql", "mongodb"]:
+            import pymongo
+            
+            # Create MongoDB client
+            client = pymongo.MongoClient(db_config["connection_string"])
+            client.admin.command('ping')  # Test connection
+            
+            return True
+        else:
+            _print_colored("Unsupported database type.", "red")
+            return False
+    except Exception as e:
+        _print_colored(f"Failed to connect to the database: {str(e)}", "red")
+        return False
 
 def extract_schema_to_file(api_key: str, config_id: Optional[str] = None, output_file: Optional[str] = None, api_url: Optional[str] = None) -> bool:
     """
