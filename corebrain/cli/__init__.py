@@ -1,8 +1,8 @@
 """
-Interfaz de línea de comandos para Corebrain SDK.
+Command-line interface for the Corebrain SDK.
 
-Este módulo proporciona una interfaz de línea de comandos para configurar
-y usar el SDK de Corebrain para consultas en lenguaje natural a bases de datos.
+This module provides a command-line interface to configure
+and use the Corebrain SDK for natural language queries to databases.
 """
 import sys
 from typing import Optional, List
@@ -43,13 +43,13 @@ __all__ = [
 # Función de conveniencia para ejecutar CLI
 def run_cli(argv: Optional[List[str]] = None) -> int:
     """
-    Ejecuta la CLI con los argumentos proporcionados.
+    Run the CLI with the provided arguments.
     
     Args:
-        argv: Lista de argumentos (usa sys.argv si es None)
+        argv: List of arguments (use sys.argv if None)
         
     Returns:
-        Código de salida
+        Exit code
     """
     if argv is None:
         argv = sys.argv[1:]

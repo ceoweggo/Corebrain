@@ -468,10 +468,10 @@ class Corebrain:
     
     def _extract_db_schema(self, detail_level: str = "full", specific_collections: List[str] = None) -> Dict[str, Any]:
         """
-        Extrae la estructura de la base de datos para proporcionar contexto a la IA.
+        Extracts the database schema to provide context to the AI.
         
         Returns:
-            Dict con la estructura de la base de datos organizada por tablas/colecciones
+            Dictionary with the database structure organized by tables/collections
         """
         logger.info(f"Extrayendo esquema de base de datos. Tipo: {self.db_config['type']}, Motor: {self.db_config.get('engine')}")
         
@@ -657,31 +657,31 @@ class Corebrain:
 
     def list_collections_name(self) -> List[str]:
         """
-        Devuelve una lista de las colecciones o tablas disponibles en la base de datos.
+        Returns a list of the available collections or tables in the database.
         
         Returns:
-            Lista de collections o tablas
+            List of collections or tables
         """
         print("Excluded tables: ", self.db_schema.get("excluded_tables", []))
         return self.db_schema.get("tables", [])
     
     def ask(self, question: str, **kwargs) -> Dict:
         """
-        Realizar una consulta en lenguaje natural a la base de datos.
+        Perform a natural language query to the database.
         
         Args:
-            question: La pregunta en lenguaje natural
-            **kwargs: Parámetros adicionales:
-                - collection_name: Para MongoDB, la colección a consultar
-                - limit: Número máximo de resultados
-                - detail_level: Nivel de detalle del esquema ("names_only", "structure", "full")
-                - auto_select: Si seleccionar automáticamente colecciones
-                - max_collections: Número máximo de colecciones a incluir
-                - execute_query: Si ejecutar la consulta (True por defecto)
-                - explain_results: Si generar explicación de resultados (True por defecto)
+            question: The natural language question
+            **kwargs: Additional parameters:
+                - collection_name: For MongoDB, the collection to query
+                - limit: Maximum number of results
+                - detail_level: Schema detail level ("names_only", "structure", "full")
+                - auto_select: Whether to automatically select collections
+                - max_collections: Maximum number of collections to include
+                - execute_query: Whether to execute the query (True by default)
+                - explain_results: Whether to generate an explanation of results (True by default)
                 
         Returns:
-            Dict con los resultados de la consulta y la explicación
+            Dictionary with the query results and explanation
         """
         try:
             # Verificar opciones de comportamiento
