@@ -1,5 +1,5 @@
 """
-Utilidades de cifrado para Corebrain SDK.
+Encryption utilities for Corebrain SDK.
 """
 import os
 import base64
@@ -15,14 +15,14 @@ logger = logging.getLogger(__name__)
 
 def derive_key_from_password(password: Union[str, bytes], salt: Optional[bytes] = None) -> bytes:
     """
-    Deriva una clave de cifrado segura a partir de una contraseña y sal.
-    
+    Derives a secure encryption key from a password and salt.
+
     Args:
-        password: Contraseña o frase de paso
-        salt: Sal criptográfica (se genera si no se proporciona)
-        
+        password: Password or passphrase
+        salt: Cryptographic salt (generated if not provided)
+
     Returns:
-        Clave derivada en bytes
+        Derived key in bytes
     """
     if isinstance(password, str):
         password = password.encode()
@@ -44,23 +44,23 @@ def derive_key_from_password(password: Union[str, bytes], salt: Optional[bytes] 
 
 def generate_key() -> str:
     """
-    Genera una nueva clave de cifrado aleatoria.
-    
+    Generates a new random encryption key.
+
     Returns:
-        Clave de cifrado en formato base64
+        Encryption key in base64 format
     """
     key = Fernet.generate_key()
     return key.decode()
 
 def create_cipher(key: Optional[Union[str, bytes]] = None) -> Fernet:
     """
-    Crea un objeto de cifrado Fernet con la clave dada o genera una nueva.
-    
+    Creates a Fernet encryption object with the given key or generates a new one.
+
     Args:
-        key: Clave de cifrado en formato base64 o None para generar
-        
+        key: Encryption key in base64 format or None to generate a new one
+
     Returns:
-        Objeto Fernet para cifrado/descifrado
+        Fernet object for encryption/decryption
     """
     if key is None:
         key = Fernet.generate_key()
@@ -71,22 +71,22 @@ def create_cipher(key: Optional[Union[str, bytes]] = None) -> Fernet:
 
 class ConfigEncrypter:
     """
-    Gestor de cifrado para configuraciones con manejo de claves.
+    Encryption manager for configurations with key management.
     """
     
     def __init__(self, key_path: Optional[Union[str, Path]] = None):
         """
-        Inicializa el encriptador con ruta de clave opcional.
-        
+        Initializes the encryptor with an optional key path.
+
         Args:
-            key_path: Ruta al archivo de clave (si no existe, se creará)
+            key_path: Path to the key file (will be created if it doesn't exist)
         """
         self.key_path = Path(key_path) if key_path else None
         self.cipher = None
         self._init_cipher()
     
     def _init_cipher(self) -> None:
-        """Inicializa el objeto de cifrado, creando o cargando la clave según sea necesario."""
+        """Initializes the encryption object, creating or loading the key as needed."""
         key = None
         
         # Si hay ruta de clave, intentar cargar o crear
@@ -128,13 +128,13 @@ class ConfigEncrypter:
     
     def encrypt(self, data: Union[str, bytes]) -> bytes:
         """
-        Cifra datos.
-        
+        Encrypts data.
+
         Args:
-            data: Datos a cifrar
-            
+            data: Data to encrypt
+
         Returns:
-            Datos cifrados en bytes
+            Encrypted data in bytes
         """
         if isinstance(data, str):
             data = data.encode()
@@ -147,13 +147,13 @@ class ConfigEncrypter:
     
     def decrypt(self, encrypted_data: Union[str, bytes]) -> bytes:
         """
-        Descifra datos.
-        
+        Decrypts data.
+
         Args:
-            encrypted_data: Datos cifrados
-            
+            encrypted_data: Encrypted data
+
         Returns:
-            Datos descifrados en bytes
+            Decrypted data in bytes
         """
         if isinstance(encrypted_data, str):
             encrypted_data = encrypted_data.encode()
@@ -169,14 +169,14 @@ class ConfigEncrypter:
     
     def encrypt_file(self, input_path: Union[str, Path], output_path: Optional[Union[str, Path]] = None) -> Path:
         """
-        Cifra un archivo completo.
-        
+        Encrypts a complete file.
+
         Args:
-            input_path: Ruta al archivo a cifrar
-            output_path: Ruta para guardar el archivo cifrado (si es None, se añade .enc)
-            
+            input_path: Path to the file to encrypt
+            output_path: Path to save the encrypted file (if None, .enc is added)
+
         Returns:
-            Ruta del archivo cifrado
+            Path of the encrypted file
         """
         input_path = Path(input_path)
         
@@ -201,14 +201,14 @@ class ConfigEncrypter:
     
     def decrypt_file(self, input_path: Union[str, Path], output_path: Optional[Union[str, Path]] = None) -> Path:
         """
-        Descifra un archivo completo.
-        
+        Decrypts a complete file.
+
         Args:
-            input_path: Ruta al archivo cifrado
-            output_path: Ruta para guardar el archivo descifrado
-            
+            input_path: Path to the encrypted file
+            output_path: Path to save the decrypted file
+
         Returns:
-            Ruta del archivo descifrado
+            Path of the decrypted file
         """
         input_path = Path(input_path)
         
@@ -238,10 +238,10 @@ class ConfigEncrypter:
     @staticmethod
     def generate_key_file(key_path: Union[str, Path]) -> None:
         """
-        Genera y guarda una nueva clave en un archivo.
-        
+        Generates and saves a new key to a file.
+
         Args:
-            key_path: Ruta donde guardar la clave
+            key_path: Path to save the key
         """
         key_path = Path(key_path)
         
