@@ -14,8 +14,8 @@ from corebrain.cli.auth.sso import authenticate_with_sso
 from corebrain.cli.config import configure_sdk, get_api_credential
 from corebrain.cli.utils import print_colored
 from corebrain.config.manager import ConfigManager
-from config.manager import export_config
-from config.manager import validate_config
+from corebrain.config.manager import export_config
+from corebrain.config.manager import validate_config
 from corebrain.lib.sso.auth import GlobodainSSOAuth
 
 def main_cli(argv: Optional[List[str]] = None) -> int:
