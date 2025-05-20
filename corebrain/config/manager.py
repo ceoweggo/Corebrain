@@ -7,10 +7,54 @@ import uuid
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 from cryptography.fernet import Fernet
-
 from corebrain.utils.serializer import serialize_to_json
 from corebrain.core.common import logger
 
+# Made by Lukasz
+# get data from pyproject.toml
+def load_project_metadata():
+    pyproject_path = Path(__file__).resolve().parent.parent / "pyproject.toml"
+    try:
+        with open(pyproject_path, "rb") as f:
+            data = tomli.load(f)
+        return data.get("project", {})
+    except (FileNotFoundError, tomli.TOMLDecodeError) as e:
+        print(f"Warning: Could not load project metadata: {e}")
+        return {}
+
+# Made by Lukasz
+# get the name, version, etc.
+def get_config():
+    metadata = load_project_metadata() # ^
+    return {
+        "model": metadata.get("name", "unknown"),
+        "version": metadata.get("version", "0.0.0"),
+        "debug": False,
+        "logging": {"level": "info"}
+    }    
+
+# Made by Lukasz
+# export config to file
+def export_config(filepath="config.json"):
+    config = get_config() # ^
+    with open(filepath, "w") as f:
+        json.dump(config, f, indent=4)
+    print(f"Configuration exported to {filepath}")
+
+# Validates that a configuration with the given ID exists.
+def validate_config(config_id: str):
+    # The API key under which configs are stored
+    api_key = os.environ.get("COREBRAIN_API_KEY", "")
+    manager = ConfigManager()
+    cfg = manager.get_config(api_key, config_id)
+
+    if cfg:
+        print(f"✅ Configuration '{config_id}' is present and valid.")
+        return 0
+    else:
+        print(f"❌ Configuration '{config_id}' not found.")
+        return 1
+    
 # Función para imprimir mensajes coloreados
 def _print_colored(message: str, color: str) -> None:
     """Versión simplificada de _print_colored que no depende de cli.utils"""
