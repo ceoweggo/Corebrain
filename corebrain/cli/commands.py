@@ -14,7 +14,7 @@ from corebrain.cli.config import configure_sdk, get_api_credential
 from corebrain.cli.utils import print_colored
 from corebrain.config.manager import ConfigManager
 from corebrain.lib.sso.auth import GlobodainSSOAuth
-from corebrain.core.client import create_api_key # function that sends request for creating API key
+from corebrain.core.client import create_api_key
 
 def main_cli(argv: Optional[List[str]] = None) -> int:
     """
@@ -176,6 +176,7 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
 
             try:
                 api_key = create_api_key(
+                    DEFAULT_API_URL,
                     api_token=args.token,
                     name=args.key_name,
                     level=args.key_level
