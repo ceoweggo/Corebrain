@@ -1,7 +1,7 @@
 # db/schema/extractor.py (reemplaza la importación circular en db/schema.py)
 
 """
-Extractor de esquemas de bases de datos independiente.
+Independent database schema extractor.
 """
 
 from typing import Dict, Any, Optional, Callable
@@ -12,14 +12,14 @@ logger = get_logger(__name__)
 
 def extract_db_schema(db_config: Dict[str, Any], client_factory: Optional[Callable] = None) -> Dict[str, Any]:
     """
-    Extrae el esquema de la base de datos con inyección de dependencias.
+    Extracts the database schema with dependency injection.
     
     Args:
-        db_config: Configuración de la base de datos
-        client_factory: Función opcional para crear un cliente (evita importación circular)
+        db_config: Database configuration
+        client_factory: Optional function to create a client (avoids circular imports)
     
     Returns:
-        Diccionario con la estructura de la base de datos
+        Dictionary with the database structure
     """
     db_type = db_config.get("type", "").lower()
     schema = {
@@ -75,11 +75,11 @@ def extract_db_schema(db_config: Dict[str, Any], client_factory: Optional[Callab
 
 def create_schema_from_corebrain() -> Callable:
     """
-    Crea una función de extracción que usa Corebrain internamente.
-    Carga dinámicamente para evitar importaciones circulares.
+    Creates an extraction function that uses Corebrain internally.
+    Loads dynamically to avoid circular imports.
     
     Returns:
-        Función que extrae schema usando Corebrain
+        Function that extracts schema using Corebrain
     """
     def extract_with_corebrain(db_config: Dict[str, Any]) -> Dict[str, Any]:
         # Importar dinámicamente para evitar circular
@@ -105,14 +105,14 @@ def create_schema_from_corebrain() -> Callable:
 # Función pública expuesta
 def extract_schema(db_config: Dict[str, Any], use_corebrain: bool = False) -> Dict[str, Any]:
     """
-    Función pública que decide cómo extraer el schema.
+    Public function that decides how to extract the schema.
     
     Args:
-        db_config: Configuración de la base de datos
-        use_corebrain: Si es True, usa la clase Corebrain para extracción
+        db_config: Database configuration
+        use_corebrain: If True, uses the Corebrain class for extraction
         
     Returns:
-        Esquema de la base de datos
+        Database schema
     """
     if use_corebrain:
         # Intentar usar Corebrain si se solicita

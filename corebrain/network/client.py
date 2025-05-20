@@ -1,5 +1,5 @@
 """
-Cliente HTTP para comunicación con la API de Corebrain.
+HTTP client for communication with the Corebrain API.
 """
 import time
 import logging
@@ -16,7 +16,7 @@ def __init__(self, verbose=False):
     self.verbose = verbose
 
 class APIError(Exception):
-    """Error genérico en la API."""
+    """Generic error in the API."""
     def __init__(self, message: str, status_code: Optional[int] = None, 
                 detail: Optional[str] = None, response: Optional[Response] = None):
         self.message = message
@@ -26,19 +26,19 @@ class APIError(Exception):
         super().__init__(message)
 
 class APITimeoutError(APIError):
-    """Error de timeout en la API."""
+    """Timeout error in the API."""
     pass
 
 class APIConnectionError(APIError):
-    """Error de conexión a la API."""
+    """Connection error to the API."""
     pass
 
 class APIAuthError(APIError):
-    """Error de autenticación en la API."""
+    """Authentication error in the API."""
     pass
 
 class APIClient:
-    """Cliente HTTP optimizado para comunicación con la API de Corebrain."""
+    """Optimized HTTP client for communication with the Corebrain API."""
     
     # Constantes para manejo de reintentos y errores
     MAX_RETRIES = 3
@@ -48,13 +48,13 @@ class APIClient:
     def __init__(self, base_url: str, default_timeout: int = 10, 
                 verify_ssl: bool = True, user_agent: Optional[str] = None):
         """
-        Inicializa el cliente API con configuración optimizada.
-        
+        Initializes the API client with optimized configuration.
+
         Args:
-            base_url: URL base para todas las peticiones
-            default_timeout: Tiempo de espera predeterminado en segundos
-            verify_ssl: Si se debe verificar el certificado SSL
-            user_agent: Agente de usuario personalizado
+            base_url: Base URL for all requests
+            default_timeout: Default timeout in seconds
+            verify_ssl: Whether to verify the SSL certificate
+            user_agent: Custom user agent
         """
         # Normalizar URL base para asegurar que termina con '/'
         self.base_url = base_url if base_url.endswith('/') else base_url + '/'
@@ -84,11 +84,11 @@ class APIClient:
         logger.debug(f"Cliente API inicializado con base_url={base_url}, timeout={default_timeout}s")
     
     def __del__(self):
-        """Asegurar que la sesión se cierre al eliminar el cliente."""
+        """Ensure the session is closed when the client is deleted."""
         self.close()
     
     def close(self):
-        """Cierra la sesión HTTP."""
+        """Closes the HTTP session."""
         if hasattr(self, 'session') and self.session:
             try:
                 self.session.close()
@@ -98,13 +98,13 @@ class APIClient:
     
     def get_full_url(self, endpoint: str) -> str:
         """
-        Construye la URL completa para un endpoint.
-        
+        Builds the full URL for an endpoint.
+
         Args:
-            endpoint: Ruta relativa del endpoint
-            
+            endpoint: Relative path of the endpoint
+
         Returns:
-            URL completa
+            Full URL
         """
         # Eliminar '/' inicial si existe para evitar rutas duplicadas
         endpoint = endpoint.lstrip('/')
@@ -113,14 +113,14 @@ class APIClient:
     def prepare_headers(self, headers: Optional[Dict[str, str]] = None, 
                        auth_token: Optional[str] = None) -> Dict[str, str]:
         """
-        Prepara los headers para una petición.
-        
+        Prepares the headers for a request.
+
         Args:
-            headers: Headers adicionales
-            auth_token: Token de autenticación
-            
+            headers: Additional headers
+            auth_token: Authentication token
+
         Returns:
-            Headers combinados
+            Combined headers
         """
         # Comenzar con headers predeterminados
         final_headers = self.default_headers.copy()
@@ -137,16 +137,16 @@ class APIClient:
     
     def handle_response(self, response: Response) -> Response:
         """
-        Procesa la respuesta para manejar errores comunes.
-        
+        Processes the response to handle common errors.
+
         Args:
-            response: Respuesta HTTP
-            
+            response: HTTP response
+
         Returns:
-            La misma respuesta si no hay errores
-            
+            The same response if there are no errors
+
         Raises:
-            APIError: Si hay errores en la respuesta
+            APIError: If there are errors in the response
         """
         status_code = response.status_code
         
@@ -209,26 +209,26 @@ class APIClient:
                auth_token: Optional[str] = None,
                retry: bool = True) -> Response:
         """
-        Realiza una petición HTTP con manejo de errores y reintentos.
-        
+        Makes an HTTP request with error handling and retries.
+
         Args:
-            method: Método HTTP (GET, POST, etc.)
-            endpoint: Ruta relativa del endpoint
-            headers: Headers adicionales
-            json: Datos para enviar como JSON
-            data: Datos para enviar como form o bytes
-            params: Parámetros de query string
-            timeout: Tiempo de espera en segundos (sobreescribe el predeterminado)
-            auth_token: Token de autenticación
-            retry: Si se deben reintentar peticiones fallidas
-            
+            method: HTTP method (GET, POST, etc.)
+            endpoint: Relative path of the endpoint
+            headers: Additional headers
+            json: Data to send as JSON
+            data: Data to send as form or bytes
+            params: Query string parameters
+            timeout: Timeout in seconds (overrides the default)
+            auth_token: Authentication token
+            retry: Whether to retry failed requests
+
         Returns:
-            Respuesta HTTP procesada
-            
+            Processed HTTP response
+
         Raises:
-            APIError: Si hay errores en la petición o respuesta
-            APITimeoutError: Si la petición excede el tiempo de espera
-            APIConnectionError: Si hay errores de conexión
+            APIError: If there are errors in the request or response
+            APITimeoutError: If the request exceeds the timeout
+            APIConnectionError: If there are connection errors
         """
         url = self.get_full_url(endpoint)
         final_headers = self.prepare_headers(headers, auth_token)
@@ -318,35 +318,35 @@ class APIClient:
         raise APIError(f"Error inesperado en petición a {endpoint}")
     
     def get(self, endpoint: str, **kwargs) -> Response:
-        """Realiza una petición GET."""
+        """Makes a GET request."""
         return self.request("GET", endpoint, **kwargs)
     
     def post(self, endpoint: str, **kwargs) -> Response:
-        """Realiza una petición POST."""
+        """Makes a POST request."""
         return self.request("POST", endpoint, **kwargs)
     
     def put(self, endpoint: str, **kwargs) -> Response:
-        """Realiza una petición PUT."""
+        """Makes a PUT request."""
         return self.request("PUT", endpoint, **kwargs)
     
     def delete(self, endpoint: str, **kwargs) -> Response:
-        """Realiza una petición DELETE."""
+        """Makes a DELETE request."""
         return self.request("DELETE", endpoint, **kwargs)
     
     def patch(self, endpoint: str, **kwargs) -> Response:
-        """Realiza una petición PATCH."""
+        """Makes a PATCH request."""
         return self.request("PATCH", endpoint, **kwargs)
     
     def get_json(self, endpoint: str, **kwargs) -> Any:
         """
-        Realiza una petición GET y devuelve los datos JSON.
-        
+        Makes a GET request and returns the JSON data.
+
         Args:
-            endpoint: Endpoint a consultar
-            **kwargs: Argumentos adicionales para request()
-            
+            endpoint: Endpoint to query
+            **kwargs: Additional arguments for request()
+
         Returns:
-            Datos JSON parseados
+            Parsed JSON data
         """
         response = self.get(endpoint, **kwargs)
         try:
@@ -356,14 +356,14 @@ class APIClient:
     
     def post_json(self, endpoint: str, **kwargs) -> Any:
         """
-        Realiza una petición POST y devuelve los datos JSON.
-        
+        Makes a POST request and returns the JSON data.
+
         Args:
-            endpoint: Endpoint a consultar
-            **kwargs: Argumentos adicionales para request()
-            
+            endpoint: Endpoint to query
+            **kwargs: Additional arguments for request()
+
         Returns:
-            Datos JSON parseados
+            Parsed JSON data
         """
         response = self.post(endpoint, **kwargs)
         try:
@@ -375,13 +375,13 @@ class APIClient:
     
     def check_health(self, timeout: int = 5) -> bool:
         """
-        Comprueba si la API está disponible.
-        
+        Checks if the API is available.
+
         Args:
-            timeout: Tiempo máximo de espera
-            
+            timeout: Maximum wait time
+
         Returns:
-            True si la API está disponible
+            True if the API is available
         """
         try:
             response = self.get("health", timeout=timeout, retry=False)
@@ -391,17 +391,17 @@ class APIClient:
     
     def verify_token(self, token: str, timeout: int = 5) -> Dict[str, Any]:
         """
-        Verifica si un token es válido.
-        
+        Verifies if a token is valid.
+
         Args:
-            token: Token a verificar
-            timeout: Tiempo máximo de espera
-            
+            token: Token to verify
+            timeout: Maximum wait time
+
         Returns:
-            Información del usuario si el token es válido
-            
+            User information if the token is valid
+
         Raises:
-            APIAuthError: Si el token no es válido
+            APIAuthError: If the token is invalid
         """
         try:
             response = self.get("api/auth/me", auth_token=token, timeout=timeout)
@@ -413,27 +413,27 @@ class APIClient:
     
     def get_api_keys(self, token: str) -> List[Dict[str, Any]]:
         """
-        Obtiene las API keys disponibles para un usuario.
-        
+        Retrieves the available API keys for a user.
+
         Args:
-            token: Token de autenticación
-            
+            token: Authentication token
+
         Returns:
-            Lista de API keys
+            List of API keys
         """
         return self.get_json("api/auth/api-keys", auth_token=token)
     
     def update_api_key_metadata(self, token: str, api_key: str, metadata: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Actualiza los metadatos de una API key.
-        
+        Updates the metadata of an API key.
+
         Args:
-            token: Token de autenticación
-            api_key: ID de la API key
-            metadata: Metadatos a actualizar
-            
+            token: Authentication token
+            api_key: API key ID
+            metadata: Metadata to update
+
         Returns:
-            Datos actualizados de la API key
+            Updated API key data
         """
         data = {"metadata": metadata}
         return self.put_json(f"api/auth/api-keys/{api_key}", auth_token=token, json=data)
@@ -441,17 +441,17 @@ class APIClient:
     def query_database(self, token: str, question: str, db_schema: Dict[str, Any], 
                      config_id: str, timeout: int = 30) -> Dict[str, Any]:
         """
-        Realiza una consulta en lenguaje natural.
-        
+        Makes a natural language query.
+
         Args:
-            token: Token de autenticación
-            question: Pregunta en lenguaje natural
-            db_schema: Esquema de la base de datos
-            config_id: ID de la configuración
-            timeout: Tiempo máximo de espera
-            
+            token: Authentication token
+            question: Natural language question
+            db_schema: Database schema
+            config_id: Configuration ID
+            timeout: Maximum wait time
+
         Returns:
-            Resultado de la consulta
+            Query result
         """
         data = {
             "question": question,
@@ -462,14 +462,14 @@ class APIClient:
     
     def exchange_sso_token(self, sso_token: str, user_data: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Intercambia un token SSO por un token API.
-        
+        Exchanges an SSO token for an API token.
+
         Args:
-            sso_token: Token SSO
-            user_data: Datos del usuario
-            
+            sso_token: SSO token
+            user_data: User data
+
         Returns:
-            Datos del token API
+            API token data
         """
         headers = {"Authorization": f"Bearer {sso_token}"}
         data = {"user_data": user_data}
@@ -479,10 +479,10 @@ class APIClient:
     
     def get_stats(self) -> Dict[str, Any]:
         """
-        Obtiene estadísticas de uso del cliente.
-        
+        Retrieves client usage statistics.
+
         Returns:
-            Estadísticas de peticiones
+            Request statistics
         """
         avg_time = self.total_request_time / max(1, self.request_count)
         error_rate = (self.error_count / max(1, self.request_count)) * 100
@@ -496,7 +496,7 @@ class APIClient:
         }
     
     def reset_stats(self) -> None:
-        """Resetea las estadísticas de uso."""
+        """Resets the usage statistics."""
         self.request_count = 0
         self.error_count = 0
         self.total_request_time = 0

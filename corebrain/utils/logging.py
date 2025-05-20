@@ -1,8 +1,8 @@
 """
-Utilidades de logging para Corebrain SDK.
+Logging utilities for Corebrain SDK.
 
-Este módulo proporciona funciones y clases para gestionar el logging
-dentro del SDK de forma consistente.
+This module provides functions and classes to manage logging
+within the SDK consistently.
 """
 import logging
 import sys
@@ -31,44 +31,44 @@ LOG_COLORS = {
 }
 
 class VerboseLogger(logging.Logger):
-    """Logger personalizado con nivel VERBOSE."""
+    """Custom logger with VERBOSE level."""
     
     def verbose(self, msg: str, *args: Any, **kwargs: Any) -> None:
         """
-        Registra un mensaje con nivel VERBOSE.
-        
+        Logs a message with VERBOSE level.
+
         Args:
-            msg: Mensaje a registrar
-            *args: Argumentos para formatear el mensaje
-            **kwargs: Argumentos adicionales para el logger
+            msg: Message to log
+            *args: Arguments to format the message
+            **kwargs: Additional arguments for the logger
         """
         return self.log(VERBOSE, msg, *args, **kwargs)
 
 class ColoredFormatter(logging.Formatter):
-    """Formateador que agrega colores a los mensajes de log en terminal."""
+    """Formatter that adds colors to log messages in the terminal."""
     
     def __init__(self, fmt: str = DEFAULT_FORMAT, datefmt: str = DEFAULT_DATE_FORMAT, 
                  use_colors: bool = True):
         """
-        Inicializa el formateador.
-        
+        Initializes the formatter.
+
         Args:
-            fmt: Formato del mensaje
-            datefmt: Formato de fecha
-            use_colors: Si es True, usa colores en terminal
+            fmt: Message format
+            datefmt: Date format
+            use_colors: If True, uses colors in the terminal
         """
         super().__init__(fmt, datefmt)
         self.use_colors = use_colors and sys.stdout.isatty()
     
     def format(self, record: logging.LogRecord) -> str:
         """
-        Formatea un registro con colores.
-        
+        Formats a log record with colors.
+
         Args:
-            record: Registro a formatear
-            
+            record: Record to format
+
         Returns:
-            Mensaje formateado
+            Formatted message
         """
         levelname = record.levelname
         message = super().format(record)
@@ -84,18 +84,18 @@ def setup_logger(name: str = "corebrain",
                 use_colors: bool = True,
                 propagate: bool = False) -> logging.Logger:
     """
-    Configura un logger con opciones personalizadas.
-    
+    Configures a logger with custom options.
+
     Args:
-        name: Nombre del logger
-        level: Nivel de logging
-        file_path: Ruta al archivo de log (opcional)
-        format_string: Formato de mensajes personalizado
-        use_colors: Si es True, usa colores en terminal
-        propagate: Si es True, propaga mensajes a loggers padre
-        
+        name: Logger name
+        level: Logging level
+        file_path: Path to the log file (optional)
+        format_string: Custom message format
+        use_colors: If True, uses colors in the terminal
+        propagate: If True, propagates messages to parent loggers
+
     Returns:
-        Logger configurado
+        Configured logger
     """
     # Registrar nivel personalizado VERBOSE
     if not hasattr(logging, 'VERBOSE'):
@@ -145,14 +145,14 @@ def setup_logger(name: str = "corebrain",
 
 def get_logger(name: str, level: Optional[int] = None) -> logging.Logger:
     """
-    Obtiene un logger existente o crea uno nuevo.
-    
+    Retrieves an existing logger or creates a new one.
+
     Args:
-        name: Nombre del logger
-        level: Nivel de logging opcional
-        
+        name: Logger name
+        level: Optional logging level
+
     Returns:
-        Logger configurado
+        Configured logger
     """
     logger = logging.getLogger(name)
     
@@ -177,15 +177,15 @@ def enable_file_logging(logger_name: str = "corebrain",
                         log_dir: Optional[Union[str, Path]] = None,
                         filename: Optional[str] = None) -> str:
     """
-    Activa el logging a archivo para un logger existente.
-    
+    Enables file logging for an existing logger.
+
     Args:
-        logger_name: Nombre del logger
-        log_dir: Directorio para los logs (opcional)
-        filename: Nombre de archivo personalizado (opcional)
-        
+        logger_name: Logger name
+        log_dir: Directory for the logs (optional)
+        filename: Custom file name (optional)
+
     Returns:
-        Ruta al archivo de log
+        Path to the log file
     """
     logger = logging.getLogger(logger_name)
     
@@ -217,11 +217,11 @@ def enable_file_logging(logger_name: str = "corebrain",
 def set_log_level(level: Union[int, str], 
                   logger_name: Optional[str] = None) -> None:
     """
-    Establece el nivel de logging para uno o todos los loggers.
-    
+    Sets the logging level for one or all loggers.
+
     Args:
-        level: Nivel de logging (nombre o valor entero)
-        logger_name: Nombre del logger específico (si es None, afecta a todos)
+        level: Logging level (name or integer value)
+        logger_name: Specific logger name (if None, affects all)
     """
     # Convertir nombre de nivel a valor si es necesario
     if isinstance(level, str):

@@ -1,5 +1,5 @@
 """
-Componentes para manejo y análisis de consultas.
+Components for query handling and analysis.
 """
 import os
 import json
@@ -16,16 +16,16 @@ from pathlib import Path
 from corebrain.cli.utils import print_colored
 
 class QueryCache:
-    """Sistema de caché multinivel para consultas."""
+    """Multilevel cache system for queries."""
     
     def __init__(self, cache_dir: str = None, ttl: int = 86400, memory_limit: int = 100):
         """
-        Inicializa el sistema de caché.
+        Initializes the cache system.
         
         Args:
-            cache_dir: Directorio para el caché persistente
-            ttl: Tiempo de vida del caché en segundos (default: 24 horas)
-            memory_limit: Límite de entradas en caché de memoria
+            cache_dir: Directory for persistent cache
+            ttl: Time-to-live of the cache in seconds (default: 24 hours)
+            memory_limit: Memory cache entry limit
         """
         # Caché en memoria (más rápido, pero volátil)
         self.memory_cache = {}
@@ -50,7 +50,7 @@ class QueryCache:
         print_colored(f"Caché inicializado en {self.cache_dir}", "blue")
     
     def _init_db(self):
-        """Inicializa la base de datos SQLite para metadatos de caché."""
+        """Initializes the SQLite database for cache metadata."""
         conn = sqlite3.connect(str(self.db_path))
         cursor = conn.cursor()
         
@@ -70,7 +70,7 @@ class QueryCache:
         conn.close()
     
     def _get_hash(self, query: str, config_id: str, collection_name: Optional[str] = None) -> str:
-        """Genera un hash único para la consulta."""
+        """Generates a unique hash for the query."""
         # Normalizar la consulta (eliminar espacios extra, convertir a minúsculas)
         normalized_query = re.sub(r'\s+', ' ', query.lower().strip())
         
@@ -83,7 +83,7 @@ class QueryCache:
         return hashlib.md5(hash_input.encode()).hexdigest()
     
     def _get_cache_path(self, query_hash: str) -> Path:
-        """Obtiene la ruta del archivo de caché para un hash dado."""
+        """Gets the cache file path for a given hash."""
         # Usar los primeros caracteres del hash para crear subdirectorios
         # Esto evita tener demasiados archivos en un solo directorio
         subdir = query_hash[:2]
@@ -93,7 +93,7 @@ class QueryCache:
         return cache_subdir / f"{query_hash}.cache"
     
     def _update_metadata(self, query_hash: str, query: str, config_id: str):
-        """Actualiza los metadatos en la base de datos."""
+        """Updates the metadata in the database."""
         conn = sqlite3.connect(str(self.db_path))
         cursor = conn.cursor()
         
@@ -122,7 +122,7 @@ class QueryCache:
         conn.close()
     
     def _update_memory_lru(self, query_hash: str):
-        """Actualiza la lista LRU (Least Recently Used) para el caché en memoria."""
+        """Updates the LRU (Least Recently Used) list for the in-memory cache."""
         if query_hash in self.memory_lru:
             # Mover al final (más recientemente usado)
             self.memory_lru.remove(query_hash)
@@ -138,15 +138,15 @@ class QueryCache:
     
     def get(self, query: str, config_id: str, collection_name: Optional[str] = None) -> Optional[Dict[str, Any]]:
         """
-        Obtiene un resultado cacheado si existe y no ha expirado.
+        Retrieves a cached result if it exists and has not expired.
         
         Args:
-            query: Consulta en lenguaje natural
-            config_id: ID de configuración de la base de datos
-            collection_name: Nombre de la colección/tabla (opcional)
+            query: Natural language query
+            config_id: Database configuration ID
+            collection_name: Name of the collection/table (optional)
             
         Returns:
-            Resultado cacheado o None si no existe o ha expirado
+            Cached result or None if it does not exist or has expired
         """
         query_hash = self._get_hash(query, config_id, collection_name)
         
@@ -195,13 +195,13 @@ class QueryCache:
     
     def set(self, query: str, config_id: str, result: Dict[str, Any], collection_name: Optional[str] = None):
         """
-        Guarda un resultado en el caché.
+        Saves a result in the cache.
         
         Args:
-            query: Consulta en lenguaje natural
-            config_id: ID de configuración
-            result: Resultado a cachear
-            collection_name: Nombre de la colección/tabla (opcional)
+            query: Natural language query
+            config_id: Configuration ID
+            result: Result to cache
+            collection_name: Name of the collection/table (optional)
         """
         query_hash = self._get_hash(query, config_id, collection_name)
         
@@ -225,10 +225,10 @@ class QueryCache:
     
     def clear(self, older_than: int = None):
         """
-        Limpia el caché.
+        Clears the cache.
         
         Args:
-            older_than: Limpiar solo entradas más antiguas que esta cantidad de segundos
+            older_than: Only clear entries older than this number of seconds
         """
         # Limpiar caché en memoria
         if older_than:
@@ -297,7 +297,7 @@ class QueryCache:
             conn.close()
     
     def get_stats(self) -> Dict[str, Any]:
-        """Obtiene estadísticas del caché."""
+        """Gets cache statistics."""
         # Contar archivos en disco
         disk_count = 0
         for subdir in self.cache_dir.iterdir():
@@ -336,7 +336,7 @@ class QueryCache:
         }
 
 class QueryTemplate:
-    """Plantilla de consulta predefinida para patrones comunes."""
+    """Predefined query template for common patterns."""
     
     def __init__(self, pattern: str, description: str, 
                  sql_template: Optional[str] = None,
@@ -344,15 +344,15 @@ class QueryTemplate:
                  db_type: str = "sql",
                  applicable_tables: Optional[List[str]] = None):
         """
-        Inicializa una plantilla de consulta.
+        Initializes a query template.
         
         Args:
-            pattern: Patrón de lenguaje natural que coincide con esta plantilla
-            description: Descripción de la plantilla
-            sql_template: Plantilla SQL con marcadores para parámetros
-            generator_func: Función alternativa para generar la consulta
-            db_type: Tipo de base de datos (sql, mongodb)
-            applicable_tables: Lista de tablas a las que aplica esta plantilla
+            pattern: Natural language pattern that matches this template
+            description: Description of the template
+            sql_template: SQL template with placeholders for parameters
+            generator_func: Alternative function to generate the query
+            db_type: Database type (sql, mongodb)
+            applicable_tables: List of tables to which this template applies
         """
         self.pattern = pattern
         self.description = description
@@ -365,7 +365,7 @@ class QueryTemplate:
         self.regex = self._compile_pattern(pattern)
     
     def _compile_pattern(self, pattern: str) -> re.Pattern:
-        """Compila el patrón en una expresión regular."""
+        """Compiles the pattern into a regular expression."""
         # Reemplazar marcadores especiales con grupos de captura
         regex_pattern = pattern
         
@@ -388,13 +388,13 @@ class QueryTemplate:
     
     def matches(self, query: str) -> Tuple[bool, List[str]]:
         """
-        Verifica si una consulta coincide con esta plantilla.
+        Checks if a query matches this template.
         
         Args:
-            query: Consulta a verificar
+            query: Query to check
             
         Returns:
-            Tupla de (coincide, [parámetros capturados])
+            Tuple of (match, [captured parameters])
         """
         match = self.regex.match(query)
         if match:
@@ -403,14 +403,14 @@ class QueryTemplate:
     
     def generate_query(self, params: List[str], db_schema: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """
-        Genera una consulta a partir de los parámetros capturados.
+        Generates a query from the captured parameters.
         
         Args:
-            params: Parámetros capturados del patrón
-            db_schema: Esquema de la base de datos
+            params: Captured parameters from the pattern
+            db_schema: Database schema
             
         Returns:
-            Consulta generada o None si no se puede generar
+            Generated query or None if it cannot be generated
         """
         if self.generator_func:
             # Usar función personalizada
@@ -437,15 +437,15 @@ class QueryTemplate:
             return None
 
 class QueryAnalyzer:
-    """Analiza patrones de consultas para sugerir optimizaciones."""
+    """Analyzes query patterns to suggest optimizations."""
     
     def __init__(self, query_log_path: str = None, template_path: str = None):
         """
-        Inicializa el analizador de consultas.
+        Initializes the query analyzer.
         
         Args:
-            query_log_path: Ruta al archivo de registro de consultas
-            template_path: Ruta al archivo de plantillas
+            query_log_path: Path to the query log file
+            template_path: Path to the template file
         """
         self.query_log_path = query_log_path or os.path.join(
             Path.home(), ".corebrain_cache", "query_log.db"
@@ -474,7 +474,7 @@ class QueryAnalyzer:
         ]
     
     def _init_db(self):
-        """Inicializa la base de datos para el registro de consultas."""
+        """Initializes the database for query logging."""
         # Asegurar que el directorio existe
         os.makedirs(os.path.dirname(self.query_log_path), exist_ok=True)
         
@@ -650,7 +650,7 @@ class QueryAnalyzer:
         return templates
     
     def _load_custom_templates(self):
-        """Carga plantillas personalizadas desde el archivo."""
+        """Loads custom templates from the file."""
         if not os.path.exists(self.template_path):
             return
             
@@ -675,13 +675,13 @@ class QueryAnalyzer:
     
     def save_custom_template(self, template: QueryTemplate) -> bool:
         """
-        Guarda una plantilla personalizada.
+        Saves a custom template.
         
         Args:
-            template: Plantilla a guardar
+            template: Template to save
             
         Returns:
-            True si se guardó correctamente
+            True if saved successfully
         """
         # Cargar plantillas existentes
         custom_templates = []
@@ -726,14 +726,14 @@ class QueryAnalyzer:
     
     def find_matching_template(self, query: str, db_schema: Dict[str, Any]) -> Optional[Tuple[QueryTemplate, List[str]]]:
         """
-        Busca una plantilla que coincida con la consulta.
+        Searches for a template that matches the query.
         
         Args:
-            query: Consulta en lenguaje natural
-            db_schema: Esquema de la base de datos
+            query: Natural language query
+            db_schema: Database schema
             
         Returns:
-            Tupla de (plantilla, parámetros) o None si no hay coincidencia
+            Tuple of (template, parameters) or None if no match is found
         """
         for template in self.templates:
             matches, params = template.matches(query)
@@ -751,15 +751,15 @@ class QueryAnalyzer:
     def log_query(self, query: str, config_id: str, collection_name: str = None, 
                  execution_time: float = 0, cost: float = 0.09, result_count: int = 0):
         """
-        Registra una consulta para análisis.
+        Registers a query for analysis.
         
         Args:
-            query: Consulta en lenguaje natural
-            config_id: ID de configuración
-            collection_name: Nombre de la colección/tabla
-            execution_time: Tiempo de ejecución en segundos
-            cost: Costo estimado de la consulta
-            result_count: Número de resultados obtenidos
+            query: Natural language query
+            config_id: Configuration ID
+            collection_name: Name of the collection/table
+            execution_time: Execution time in seconds
+            cost: Estimated cost of the query
+            result_count: Number of results obtained
         """
         # Detectar patrón
         pattern = self._detect_pattern(query)
@@ -808,13 +808,13 @@ class QueryAnalyzer:
     
     def _detect_pattern(self, query: str) -> Optional[str]:
         """
-        Detecta un patrón en la consulta.
+        Detects a pattern in the query.
         
         Args:
-            query: Consulta a analizar
+            query: Query to analyze
             
         Returns:
-            Patrón detectado o None
+            Detected pattern or None
         """
         normalized_query = query.lower()
         
@@ -842,13 +842,13 @@ class QueryAnalyzer:
     
     def get_common_patterns(self, limit: int = 5) -> List[Dict[str, Any]]:
         """
-        Obtiene los patrones de consulta más comunes.
+        Retrieves the most common query patterns.
         
         Args:
-            limit: Número máximo de patrones a devolver
+            limit: Maximum number of patterns to return
             
         Returns:
-            Lista de patrones más comunes
+            List of the most common patterns
         """
         conn = sqlite3.connect(self.query_log_path)
         cursor = conn.cursor()
@@ -876,14 +876,14 @@ class QueryAnalyzer:
     
     def suggest_new_template(self, query: str, sql_query: str) -> Optional[QueryTemplate]:
         """
-        Sugiere una nueva plantilla basada en una consulta exitosa.
+        Suggests a new template based on a successful query.
         
         Args:
-            query: Consulta en lenguaje natural
-            sql_query: Consulta SQL generada
+            query: Natural language query
+            sql_query: Generated SQL query
             
         Returns:
-            Plantilla sugerida o None
+            Suggested template or None
         """
         # Detectar patrón
         pattern = self._detect_pattern(query)
@@ -924,10 +924,10 @@ class QueryAnalyzer:
     
     def get_optimization_suggestions(self) -> List[Dict[str, Any]]:
         """
-        Genera sugerencias para optimizar consultas.
+        Generates suggestions to optimize queries.
         
         Returns:
-            Lista de sugerencias de optimización
+            List of optimization suggestions
         """
         suggestions = []
         

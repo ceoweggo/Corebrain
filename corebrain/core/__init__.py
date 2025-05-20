@@ -1,8 +1,8 @@
 """
-Componentes principales del SDK de Corebrain.
+Corebrain SDK main components.
 
-Este paquete contiene los componentes centrales del SDK, 
-incluyendo el cliente principal y el manejo de schemas.
+This package contains the core components of the SDK,
+including the main client and schema handling.
 """
 from corebrain.core.client import Corebrain, init
 from corebrain.core.query import QueryCache, QueryAnalyzer, QueryTemplate

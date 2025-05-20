@@ -1,5 +1,5 @@
 """
-Conectores de bases de datos para diferentes motores.
+Database connectors for different engines.
 """
 
 from typing import Dict, Any
@@ -9,13 +9,13 @@ from corebrain.db.connectors.mongodb import MongoDBConnector
 
 def get_connector(db_config: Dict[str, Any]):
     """
-    Obtiene el conector adecuado según la configuración de la base de datos.
+    Gets the appropriate connector based on the database configuration.
     
     Args:
-        db_config: Configuración de la base de datos
+        db_config: Database configuration
         
     Returns:
-        Instancia del conector apropiado
+        Instance of the appropriate connector
     """
     db_type = db_config.get("type", "").lower()
     
