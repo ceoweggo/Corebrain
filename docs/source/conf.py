@@ -20,7 +20,10 @@ templates_path = ['_templates']
 exclude_patterns = []
 
 html_theme = 'furo'
-html_css_files = ['custom.css']
+html_css_files = [
+    "custom.css",
+    "https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap",
+]
 html_static_path = ['_static']
 
 html_title = "Corebrain Documentation 0.1"
