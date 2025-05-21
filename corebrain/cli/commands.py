@@ -39,28 +39,116 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
             argv = sys.argv[1:]
         
         # Argument parser configuration
-        parser = argparse.ArgumentParser(description="Corebrain SDK CLI")
-        parser.add_argument("--version", action="store_true", help="Show SDK version")
-        parser.add_argument("--configure", action="store_true", help="Configure the Corebrain SDK")
-        parser.add_argument("--list-configs", action="store_true", help="List available configurations")
-        parser.add_argument("--remove-config", action="store_true", help="Remove a configuration")
-        parser.add_argument("--show-schema", action="store_true", help="Show the schema of the configured database")
-        parser.add_argument("--extract-schema", action="store_true", help="Extract the database schema and save it to a file")
-        parser.add_argument("--output-file", help="File to save the extracted schema")
-        parser.add_argument("--config-id", help="Specific configuration ID to use")
-        parser.add_argument("--token", help="Corebrain API token (any type)")
-        parser.add_argument("--api-key", help="Specific API Key for Corebrain")
-        parser.add_argument("--api-url", help="Corebrain API URL")
-        parser.add_argument("--sso-url", help="Globodain SSO service URL")
-        parser.add_argument("--login", action="store_true", help="Login via SSO")
-        parser.add_argument("--test-auth", action="store_true", help="Test SSO authentication system")
-        parser.add_argument("--woami",action="store_true",help="Display information about the current user")
-        parser.add_argument("--check-status",action="store_true",help="Checks status of task")
-        parser.add_argument("--task-id",help="ID of the task to check status for")
-        parser.add_argument("--validate-config",action="store_true",help="Validates the selected configuration without executing any operations")
-        parser.add_argument("--test-connection",action="store_true",help="Tests the connection to the Corebrain API using the provide credentials")
-        parser.add_argument("--export-config",action="store_true",help="Exports the current configuration to a file")
-        
+        parser = argparse.ArgumentParser(
+            description="Corebrain SDK CLI",
+            formatter_class=argparse.RawTextHelpFormatter
+        )
+
+        auth_group = parser.add_argument_group("Authentication Options")
+        config_group = parser.add_argument_group("Configuration Management")
+        schema_group = parser.add_argument_group("Schema Operations")
+        task_group = parser.add_argument_group("Task Management")
+        general_group = parser.add_argument_group("General Options")
+        debug_group = parser.add_argument_group("Debugging Options")
+
+        auth_group.add_argument("-l", "--login", 
+            action="store_true",
+            help="Authenticate via Globodain SSO to obtain API credentials"
+        )
+        auth_group.add_argument("--api-key", 
+            type=str,
+            help="Directly provide Corebrain API key (overrides other auth methods)"
+        )
+        auth_group.add_argument("--token", 
+            type=str,
+            help="Corebrain API token (alternative authentication)"
+        )
+        auth_group.add_argument("--api-url", 
+            type=str,
+            default=DEFAULT_API_URL,
+            help=f"Corebrain API endpoint URL (default: {DEFAULT_API_URL})"
+        )
+        auth_group.add_argument("--sso-url", 
+            type=str,
+            default=DEFAULT_SSO_URL,
+            help=f"Globodain SSO service URL (default: {DEFAULT_SSO_URL})"
+        )
+
+        # Configuration Management Group
+        config_group.add_argument("-c", "--configure", 
+            action="store_true",
+            help="Interactive SDK configuration wizard"
+        )
+        config_group.add_argument("--list-configs", 
+            action="store_true",
+            help="List all available configurations"
+        )
+        config_group.add_argument("--remove-config", 
+            action="store_true",
+            help="Remove a specific configuration"
+        )
+        config_group.add_argument("--config-id", 
+            type=str,
+            help="Unique configuration identifier (alphanumeric, required for config operations)"
+        )
+        config_group.add_argument("--export-config", 
+            type=str,
+            metavar="FILENAME",
+            help="Export current configuration to JSON file (e.g., ./corebrain_config.json)"
+        )
+
+        # Schema Operations Group
+        schema_group.add_argument("--show-schema", 
+            action="store_true",
+            help="Display database schema structure"
+        )
+        schema_group.add_argument("--extract-schema", 
+            action="store_true",
+            help="Extract schema to file (requires --config-id and --output-file)"
+        )
+        schema_group.add_argument("--output-file", 
+            type=str,
+            metavar="FILE",
+            help="Output path for schema extraction (e.g., ./schema.json)"
+        )
+
+        # Task Management Group
+        task_group.add_argument("--check-status", 
+            action="store_true",
+            help="Check processing task status (requires --task-id)"
+        )
+        task_group.add_argument("--task-id", 
+            type=str,
+            help="Unique task identifier (UUID format)"
+        )
+
+        # General Options Group
+        general_group.add_argument("-v", "--version", 
+            action="store_true",
+            help="Show SDK version and exit"
+        )
+        general_group.add_argument("--woami", 
+            action="store_true",
+            help="Display current authentication information"
+        )
+        general_group.add_argument("--test-connection", 
+            action="store_true",
+            help="Validate API connectivity with current credentials"
+        )
+        general_group.add_argument("--validate-config", 
+            action="store_true",
+            help="Validate configuration file syntax"
+        )
+
+        # Debugging Options Group
+        debug_group.add_argument("--test-auth", 
+            action="store_true",
+            help="Test SSO authentication flow (developer use)"
+        )
+        debug_group.add_argument("--verbose", 
+            action="store_true",
+            help="Enable detailed debug output"
+        )
         
         args = parser.parse_args(argv)
         
