@@ -54,7 +54,7 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
         parser.add_argument("--sso-url", help="Globodain SSO service URL")
         parser.add_argument("--login", action="store_true", help="Login via SSO")
         parser.add_argument("--test-auth", action="store_true", help="Test SSO authentication system")
-        parser.add_argument("--woami",action="store_true",help="Display information about the current user")
+        parser.add_argument("--whoami",action="store_true",help="Display information about the current user")
         parser.add_argument("--check-status",action="store_true",help="Checks status of task")
         parser.add_argument("--task-id",help="ID of the task to check status for")
         parser.add_argument("--validate-config",action="store_true",help="Validates the selected configuration without executing any operations")
@@ -193,7 +193,7 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
                 print_colored(f"❌ Failed to check status: {str(e)}", "red")
                 return 1
 
-        if args.woami:
+        if args.whoami:
             try:
                 #downloading user data
                 sso_url = args.sso_url or os.environ.get("COREBRAIN_SSO_URL") or DEFAULT_SSO_URL
