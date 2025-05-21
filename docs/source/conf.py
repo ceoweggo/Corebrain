@@ -23,3 +23,5 @@ html_theme = 'furo'
 html_css_files = ['custom.css']
 html_static_path = ['_static']
 
+html_title = "Corebrain Documentation 0.1"
+

@@ -1,0 +1,31 @@
+.sidebar-brand-text {
+  display: inline-block;
+  font-weight: 800;
+  font-size: 1.2rem; /* delikatnie zmniejszona */
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  padding: 0.4em 0.8em;
+  border-radius: 10px;
+  margin: 0.5rem auto;
+  text-align: center;
+  letter-spacing: 0.03em;
+  transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+  user-select: none;
+  cursor: default;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+body.light .sidebar-brand-text {
+  background: linear-gradient(135deg, #3a8dde, #2c6db6);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(58, 141, 222, 0.6);
+}
+
+
+body.dark .sidebar-brand-text {
+  background: linear-gradient(135deg, #1e2a47, #122147);
+  color: #a9c1ff;
+  box-shadow: 0 4px 12px rgba(35, 56, 93, 0.8);
+}
