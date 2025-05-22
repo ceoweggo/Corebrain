@@ -46,41 +46,41 @@ def init(api_key: str, config_id: str, skip_verification: bool = False) -> Coreb
 # Funciones de conveniencia a nivel de paquete
 def list_configurations(api_key: str) -> List[str]:
     """
-    Lista las configuraciones disponibles para una API key.
+    Lists the available configurations for an API key.
     
     Args:
-        api_key: API Key de Corebrain
+        api_key: Corebrain API Key
         
     Returns:
-        Lista de IDs de configuración disponibles
+        List of available configuration IDs
     """
     config_manager = ConfigManager()
     return config_manager.list_configs(api_key)
 
 def remove_configuration(api_key: str, config_id: str) -> bool:
     """
-    Elimina una configuración específica.
+    Deletes a specific configuration.
     
     Args:
-        api_key: API Key de Corebrain
-        config_id: ID de la configuración a eliminar
+        api_key: Corebrain API Key
+        config_id: ID of the configuration to delete
         
     Returns:
-        True si se eliminó correctamente, False en caso contrario
+        True if deleted successfully, False otherwise
     """
     config_manager = ConfigManager()
     return config_manager.remove_config(api_key, config_id)
 
 def get_config(api_key: str, config_id: str) -> Optional[Dict[str, Any]]:
     """
-    Obtiene una configuración específica.
+    Retrieves a specific configuration.
     
     Args:
-        api_key: API Key de Corebrain
-        config_id: ID de la configuración a obtener
+        api_key: Corebrain API Key
+        config_id: ID of the configuration to retrieve
         
     Returns:
-        Diccionario con la configuración o None si no existe
+        Dictionary with the configuration or None if it does not exist
     """
     config_manager = ConfigManager()
     return config_manager.get_config(api_key, config_id)

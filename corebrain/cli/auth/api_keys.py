@@ -13,14 +13,14 @@ from corebrain.core.client import Corebrain
 def verify_api_token(token: str, api_url: Optional[str] = None, user_data: Optional[Dict[str, Any]] = None) -> Tuple[bool, Optional[Dict[str, Any]]]:    
     """
     Verifies if an API token is valid.
-    
+
     Args:
-        token: API token to verify
-        api_url: Optional API URL
-        user_data: User data
-        
+        token (str): API token to verify.
+        api_url (str, optional): API URL. Defaults to None.
+        user_data (dict, optional): User data. Defaults to None.
+
     Returns:
-        Tuple with (validity, user information) if valid, (False, None) if not
+        tuple: (validity (bool), user information (dict)) if valid, else (False, None).
     """
     try:
         # Create a temporary SDK instance to verify the token

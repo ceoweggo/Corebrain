@@ -1,5 +1,5 @@
 """
-Utilidades de serialización para Corebrain SDK.
+Serialization utilities for Corebrain SDK.
 """
 import json
 
@@ -8,7 +8,7 @@ from bson import ObjectId
 from decimal import Decimal
 
 class JSONEncoder(json.JSONEncoder):
-    """Serializador JSON personalizado para tipos especiales."""
+    """Custom JSON serializer for special types."""
     def default(self, obj):
         # Objetos datetime
         if isinstance(obj, (datetime, date, time)):
@@ -29,5 +29,5 @@ class JSONEncoder(json.JSONEncoder):
         return super().default(obj)
 
 def serialize_to_json(obj):
-    """Serializa cualquier objeto a JSON usando el encoder personalizado"""
+    """Serializes any object to JSON using the custom encoder"""
     return json.dumps(obj, cls=JSONEncoder)

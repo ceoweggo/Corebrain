@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 
 class GlobodainSSOClient:
     """
-    Cliente SDK para servicios de Globodain que se conectan al SSO central
+    SDK client for Globodain services that connect to the central SSO
     """
     
     def __init__(
@@ -18,14 +18,14 @@ class GlobodainSSOClient:
         redirect_uri: str
     ):
         """
-        Inicializar el cliente SSO
-        
+        Initialize the SSO client
+
         Args:
-            sso_url: URL base del servicio SSO (ej: https://sso.globodain.com)
-            client_id: ID de cliente del servicio
-            client_secret: Secreto de cliente del servicio
-            service_id: ID numérico del servicio en la plataforma SSO
-            redirect_uri: URI de redirección para OAuth
+            sso_url: Base URL of the SSO service (e.g., https://sso.globodain.com)
+            client_id: Client ID of the service
+            client_secret: Client secret of the service
+            service_id: Numeric ID of the service on the SSO platform
+            redirect_uri: Redirect URI for OAuth
         """
         self.sso_url = sso_url.rstrip('/')
         self.client_id = client_id
@@ -37,13 +37,13 @@ class GlobodainSSOClient:
 
     def get_login_url(self, provider: str = None) -> str:
         """
-        Obtener URL para iniciar sesión en SSO
-        
+        Get URL to initiate SSO login
+
         Args:
-            provider: Proveedor de OAuth (google, microsoft, github) o None para login normal
-            
+            provider: OAuth provider (google, microsoft, github) or None for normal login
+
         Returns:
-            URL para redireccionar al usuario
+            URL to redirect the user
         """
         if provider:
             return f"{self.sso_url}/api/auth/oauth/{provider}?service_id={self.service_id}"
@@ -52,16 +52,16 @@ class GlobodainSSOClient:
     
     def verify_token(self, token: str) -> Dict[str, Any]:
         """
-        Verificar un token de acceso y obtener información del usuario
-        
+        Verify an access token and retrieve user information
+
         Args:
-            token: Token JWT a verificar
-            
+            token: JWT token to verify
+
         Returns:
-            Información del usuario si el token es válido
-            
+            User information if the token is valid
+
         Raises:
-            Exception: Si el token no es válido
+            Exception: If the token is not valid
         """
         # Verificar si ya tenemos información cacheada y válida del token
         now = datetime.now()
@@ -109,16 +109,16 @@ class GlobodainSSOClient:
     
     def authenticate_service(self, token: str) -> Dict[str, Any]:
         """
-        Autenticar un token para usarlo con este servicio específico
-        
+        Authenticate a token for use with this specific service
+
         Args:
-            token: Token JWT obtenido del SSO
-            
+            token: JWT token obtained from the SSO
+
         Returns:
-            Nuevo token específico para el servicio
-            
+            New service-specific token
+
         Raises:
-            Exception: Si hay un error en la autenticación
+            Exception: If there is an authentication error
         """
         headers = {
             "Authorization": f"Bearer {token}",
@@ -138,16 +138,16 @@ class GlobodainSSOClient:
     
     def refresh_token(self, refresh_token: str) -> Dict[str, Any]:
         """
-        Renovar un token de acceso usando refresh token
-        
+        Renew an access token using a refresh token
+
         Args:
-            refresh_token: Token de refresco
-            
+            refresh_token: Refresh token
+
         Returns:
-            Nuevo token de acceso
-            
+            New access token
+
         Raises:
-            Exception: Si hay un error al renovar el token
+            Exception: If there is an error renewing the token
         """
         response = requests.post(
             f"{self.sso_url}/api/auth/refresh",
@@ -161,17 +161,17 @@ class GlobodainSSOClient:
     
     def logout(self, refresh_token: str, access_token: str) -> bool:
         """
-        Cerrar sesión (revoca refresh token)
-        
+        Log out (revoke refresh token)
+
         Args:
-            refresh_token: Token de refresco a revocar
-            access_token: Token de acceso válido
-            
+            refresh_token: Refresh token to revoke
+            access_token: Valid access token
+
         Returns:
-            True si se cerró sesión correctamente
-            
+            True if the logout was successful
+
         Raises:
-            Exception: Si hay un error al cerrar sesión
+            Exception: If there is an error logging out
         """
         headers = {
             "Authorization": f"Bearer {access_token}",
