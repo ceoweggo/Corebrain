@@ -69,18 +69,78 @@ public class CorebrainCS(string pythonPath = "python", string scriptPath = "core
       throw new ArgumentException("Invalid API URL format. Must be a valid HTTP/HTTPS URL", nameof(apiurl));
     }
 
-    // Escape the URL for command line safety
     var escapedUrl = apiurl.Replace("\"", "\\\"");
     return ExecuteCommand($"--api-url \"{escapedUrl}\"");
+  } 
+  public string SsoUrl(string ssoUrl) {
+    if (string.IsNullOrWhiteSpace(ssoUrl)) {
+        throw new ArgumentException("SSO URL cannot be empty or whitespace", nameof(ssoUrl));
+    }
+
+    if (!Uri.TryCreate(ssoUrl, UriKind.Absolute, out var uriResult) ||
+        (uriResult.Scheme != Uri.UriSchemeHttp && uriResult.Scheme != Uri.UriSchemeHttps))  {
+        throw new ArgumentException("Invalid SSO URL format. Must be a valid HTTP/HTTPS URL", nameof(ssoUrl));
+    }
+
+    var escapedUrl = ssoUrl.Replace("\"", "\\\"");
+    return ExecuteCommand($"--sso-url \"{escapedUrl}\"");
+  }
+  public string Login(string username, string password){
+    if (string.IsNullOrWhiteSpace(username)){
+        throw new ArgumentException("Username cannot be empty or whitespace", nameof(username));
+    }
+
+    if (string.IsNullOrWhiteSpace(password)){
+        throw new ArgumentException("Password cannot be empty or whitespace", nameof(password));
+    }
+
+    var escapedUsername = username.Replace("\"", "\\\"");
+    var escapedPassword = password.Replace("\"", "\\\"");
+
+    return ExecuteCommand($"--login --username \"{escapedUsername}\" --password \"{escapedPassword}\"");
   }
 
-  public string ExecuteCommand(string arguments) {
-    if (_verbose) {
+  public string LoginWithToken(string token) {
+      if (string.IsNullOrWhiteSpace(token)) {
+          throw new ArgumentException("Token cannot be empty or whitespace", nameof(token));
+      }
+
+      var escapedToken = token.Replace("\"", "\\\"");
+      return ExecuteCommand($"--login --token \"{escapedToken}\"");
+  }
+
+  //When youre logged in use this function
+  public string TestAuth() {
+    return ExecuteCommand("--test-auth");
+  }
+
+  //Without beeing logged
+  public string TestAuth(string? apiUrl = null, string? token = null) {
+    var args = new List<string> { "--test-auth" };
+            
+    if (!string.IsNullOrEmpty(apiUrl)) {
+        if (!Uri.IsWellFormedUriString(apiUrl, UriKind.Absolute))
+            throw new ArgumentException("Invalid API URL format", nameof(apiUrl));
+                
+        args.Add($"--api-url \"{apiUrl}\"");
+        }
+            
+    if (!string.IsNullOrEmpty(token))
+        args.Add($"--token \"{token}\"");
+
+    return ExecuteCommand(string.Join(" ", args));
+  }
+  public string ExecuteCommand(string arguments)
+  {
+    if (_verbose)
+    {
       Console.WriteLine($"Executing: {_pythonPath} {_scriptPath} {arguments}");
     }
 
-    var process = new Process {
-      StartInfo = new ProcessStartInfo {
+    var process = new Process
+    {
+      StartInfo = new ProcessStartInfo
+      {
         FileName = _pythonPath,
         Arguments = $"\"{_scriptPath}\" {arguments}",
         RedirectStandardOutput = true,
@@ -95,15 +155,18 @@ public class CorebrainCS(string pythonPath = "python", string scriptPath = "core
     var error = process.StandardError.ReadToEnd();
     process.WaitForExit();
 
-    if (_verbose) {
+    if (_verbose)
+    {
       Console.WriteLine("Command output:");
       Console.WriteLine(output);
-      if (!string.IsNullOrEmpty(error)) {
+      if (!string.IsNullOrEmpty(error))
+      {
         Console.WriteLine("Error output:\n" + error);
       }
     }
 
-    if (!string.IsNullOrEmpty(error)) {
+    if (!string.IsNullOrEmpty(error))
+    {
       throw new InvalidOperationException($"Python CLI error: {error}");
     }
 
