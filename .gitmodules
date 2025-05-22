@@ -1,0 +1,3 @@
+[submodule "corebrain/CLI-UI"]
+	path = corebrain/CLI-UI
+	url = https://github.com/Luki20091/CLI-UI.git

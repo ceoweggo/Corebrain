@@ -64,7 +64,8 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
         parser.add_argument("--validate-config",action="store_true",help="Validates the selected configuration without executing any operations")
         parser.add_argument("--test-connection",action="store_true",help="Tests the connection to the Corebrain API using the provide credentials")
         parser.add_argument("--export-config",action="store_true",help="Exports the current configuration to a file")
-        
+        parser.add_argument("--gui", action="store_true", help="Check setup and launch the web interface")
+
         
         args = parser.parse_args(argv)
         
@@ -361,7 +362,84 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
                 print_colored(f"Failed to connect to Corebrain API: {e}", "red")
                 return 1
 
+
+
+
+        if args.gui:
+            import subprocess
+            from pathlib import Path
+
+            def run_cmd(cmd, cwd=None):
+                print_colored(f"▶ {cmd}", "yellow")
+                subprocess.run(cmd, shell=True, cwd=cwd, check=True)
+
+            print("Checking GUI setup...")
+
+            commands_path = Path(__file__).resolve()
+            corebrain_root = commands_path.parents[1]
+
+            cli_ui_path = corebrain_root / "CLI-UI"
+            client_path = cli_ui_path / "client"
+            server_path = cli_ui_path / "server"
+            api_path = corebrain_root / "wrappers" / "csharp_cli_api"
+
+            # Path validation
+            if not client_path.exists():
+                print_colored(f"Folder {client_path} does not exist!", "red")
+                sys.exit(1)
+            if not server_path.exists():
+                print_colored(f"Folder {server_path} does not exist!", "red")
+                sys.exit(1)
+            if not api_path.exists():
+                print_colored(f"Folder {api_path} does not exist!", "red")
+                sys.exit(1)
+
+            # Setup client
+            if not (client_path / "node_modules").exists():
+                print_colored("Installing frontend (React) dependencies...", "cyan")
+                run_cmd("npm install", cwd=client_path)
+                run_cmd("npm install history", cwd=client_path)
+                run_cmd("npm install --save-dev vite", cwd=client_path)
+                run_cmd("npm install concurrently --save-dev", cwd=client_path)
+
+            # Setup server
+            if not (server_path / "node_modules").exists():
+                print_colored("Installing backend (Express) dependencies...", "cyan")
+                run_cmd("npm install", cwd=server_path)
+                run_cmd("npm install --save-dev ts-node-dev", cwd=server_path)
+
+            # Start GUI: CLI UI + Corebrain API
+            print("Starting GUI (CLI-UI + Corebrain API)...")
+
+            def run_in_background_silent(cmd, cwd):
+                return subprocess.Popen(
+                    cmd,
+                    cwd=cwd,
+                    shell=True,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL
+                )
+
+            run_in_background_silent("dotnet run", cwd=api_path)
+            run_in_background_silent(
+                'npx concurrently "npm --prefix server run dev" "npm --prefix client run dev"',
+                cwd=cli_ui_path
+            )
+
+            url = "http://localhost:5173/"
+            print_colored(f"GUI: {url}", "cyan")
+            webbrowser.open(url)
         
+
+
+
+
+
+
+
+
+
+
         else:
             # If no option was specified, show help
             parser.print_help()
