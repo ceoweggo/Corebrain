@@ -8,11 +8,12 @@ class GlobodainSSOAuth:
         self.logger = logging.getLogger(__name__)
         
         # Configuración por defecto
-        self.sso_url = self.config.get('GLOBODAIN_SSO_URL', 'http://localhost:3000/login') # URL del SSO
-        self.client_id = self.config.get('GLOBODAIN_CLIENT_ID', '')
-        self.client_secret = self.config.get('GLOBODAIN_CLIENT_SECRET', '')
+        self.sso_url = self.config.get('GLOBODAIN_SSO_URL', 'https://sso.globodain.com/login') # URL del SSO
+        self.client_id = self.config.get('GLOBODAIN_CLIENT_ID', '63d767e9-5a06-4890-a194-8608ae29d426')
+        self.client_secret = self.config.get('GLOBODAIN_CLIENT_SECRET', '06cf39f6-ca93-466e-955e-cb6ea0a02d4d')
         self.redirect_uri = self.config.get('GLOBODAIN_REDIRECT_URI', '')
         self.success_redirect = self.config.get('GLOBODAIN_SUCCESS_REDIRECT', 'https://sso.globodain.com/cli/success')
+        self.service_id = self.config.get('GLOBODAIN_SERVICE_ID', 2)
     
     def requires_auth(self, session_handler):
         """

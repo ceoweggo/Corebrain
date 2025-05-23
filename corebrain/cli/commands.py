@@ -52,7 +52,7 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
         parser.add_argument("--sso-url", help="Globodain SSO service URL")
         parser.add_argument("--login", action="store_true", help="Login via SSO")
         parser.add_argument("--test-auth", action="store_true", help="Test SSO authentication system")
-        parser.add_argument("--create", action="store_true", help="Create a new API Key")
+        parser.add_argument("--create-api-key", action="store_true", help="Create a new API Key")
         parser.add_argument("--key-name", help="Name of the new API Key")
         parser.add_argument("--key-level", choices=["read", "write", "admin"], default="read", help="Access level for the new API Key")
         
@@ -80,7 +80,8 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
                 'GLOBODAIN_CLIENT_ID': SSO_CLIENT_ID,
                 'GLOBODAIN_CLIENT_SECRET': SSO_CLIENT_SECRET,
                 'GLOBODAIN_REDIRECT_URI': f"http://localhost:{DEFAULT_PORT}/auth/sso/callback",
-                'GLOBODAIN_SUCCESS_REDIRECT': f"http://localhost:{DEFAULT_PORT}/auth/sso/callback"
+                'GLOBODAIN_SUCCESS_REDIRECT': f"http://localhost:{DEFAULT_PORT}/auth/sso/callback",
+                "GLOBODAIN_SERVICE_ID": 2,
             }
             
             try:
@@ -163,13 +164,16 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
             elif args.extract_schema:
                 extract_schema_to_file(api_key, args.config_id, args.output_file, api_url)
 
-        # Creating the API key
-        if args.create:
-
-            if not args.token:
-                print_colored("You must provide an API token using --token", "yellow")
+        # Handles the CLI command to create a new API key using stored credentials (token from SSO)
+        if args.create_api_key:
+            
+            # Get token from SSO
+            if not os.environ.get("COREBRAIN_SSO_URL"):
+                print_colored("You must log in to SSO first using --login to obtain a valid token.", color="yellow")
                 return 1
+            token = os.environ.get("COREBRAIN_SSO_URL")
 
+            # Checks if the API Key is set in argument
             if not args.key_name:
                 print_colored("You must provide a name for the API Key using --key-name", "yellow")
                 return 1
@@ -177,7 +181,7 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
             try:
                 api_key = Corebrain.create_api_key(
                     DEFAULT_API_URL,
-                    api_token=args.token,
+                    api_token=token,
                     name=args.key_name,
                     level=args.key_level
                 )
