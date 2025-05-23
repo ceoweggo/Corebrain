@@ -1,0 +1,32 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Build Project",
+        "command": "dotnet",
+        "type": "process",
+        "args": [
+          "build",
+          "${workspaceFolder}/CorebrainCS.Tests/CorebrainCS.Tests.csproj",
+          "--configuration",
+          "Release"
+        ],
+        "problemMatcher": "$msCompile",
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        }
+      },
+      {
+        "label": "Run Project",
+        "command": "dotnet",
+        "type": "process",
+        "args": [
+          "run",
+          "--project",
+          "${workspaceFolder}/CorebrainCS.Tests/CorebrainCS.Tests.csproj"
+        ],
+        "dependsOn": ["Build Project"]
+      },
+    ]
+}  

@@ -1,10 +1,10 @@
 """
-Conectores base para diferentes tipos de bases de datos.
+Base connectors for different types of databases.
 """
 from typing import Dict, Any, List, Optional, Callable
 
 class DatabaseConnector:
-    """Clase base para todos los conectores de base de datos"""
+    """Base class for all database connectors."""
     
     def __init__(self, config: Dict[str, Any], timeout: int = 10):
         self.config = config
@@ -12,20 +12,20 @@ class DatabaseConnector:
         self.connection = None
     
     def connect(self):
-        """Establece conexión a la base de datos"""
+        """Establishes a connection to the database."""
         raise NotImplementedError
     
     def extract_schema(self, sample_limit: int = 5, table_limit: Optional[int] = None, 
                       progress_callback: Optional[Callable] = None) -> Dict[str, Any]:
-        """Extrae el esquema de la base de datos"""
+        """Extracts the database schema."""
         raise NotImplementedError
     
     def execute_query(self, query: str) -> List[Dict[str, Any]]:
-        """Ejecuta una consulta en la base de datos"""
+        """Executes a query on the database."""
         raise NotImplementedError
     
     def close(self):
-        """Cierra la conexión"""
+        """Closes the connection."""
         if self.connection:
             try:
                 self.connection.close()

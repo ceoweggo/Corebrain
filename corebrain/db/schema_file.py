@@ -1,12 +1,12 @@
 """
-Componentes para extracción y optimización de esquemas de base de datos.
+Components for extracting and optimizing database schemas.
 """
 import json
 
 from typing import Dict, Any, Optional
 
 def _print_colored(message: str, color: str) -> None:
-    """Versión simplificada de _print_colored que no depende de cli.utils"""
+    """Simplified version of _print_colored that doesn't depend on cli.utils."""
     colors = {
         "red": "\033[91m",
         "green": "\033[92m",
@@ -19,13 +19,13 @@ def _print_colored(message: str, color: str) -> None:
 
 def extract_db_schema(db_config: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Extrae el esquema de la base de datos directamente sin usar el SDK.
+    Extracts the database schema directly without using the SDK.
     
     Args:
-        db_config: Configuración de la base de datos
+        db_config: Database configuration
     
     Returns:
-        Diccionario con la estructura de la base de datos organizada por tablas/colecciones
+        Dictionary with the database structure organized by tables/collections
     """
     db_type = db_config["type"].lower()
     schema = {
@@ -154,8 +154,8 @@ def extract_db_schema(db_config: Dict[str, Any]) -> Dict[str, Any]:
 
 def extract_db_schema_direct(db_config: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Extrae el esquema directamente sin usar el cliente de Corebrain.
-    Esta es una versión reducida que no requiere importar core.
+    Extracts the schema directly without using the Corebrain client.
+    This is a reduced version that doesn't require importing core.
     """
     db_type = db_config["type"].lower()
     schema = {
@@ -176,10 +176,10 @@ def extract_db_schema_direct(db_config: Dict[str, Any]) -> Dict[str, Any]:
 
 def extract_schema_with_lazy_init(api_key: str, db_config: Dict[str, Any], api_url: Optional[str] = None) -> Dict[str, Any]:
     """
-    Extrae esquema usando importación tardía del cliente.
+    Extracts the schema using late import of the client.
     
-    Esta función evita el problema de importación circular cargando
-    dinámicamente el cliente de Corebrain solo cuando es necesario.
+    This function avoids the circular import issue by dynamically loading 
+    the Corebrain client only when necessary.
     """
     try:
         # La importación se mueve aquí para evitar el problema de circular import
@@ -207,19 +207,40 @@ def extract_schema_with_lazy_init(api_key: str, db_config: Dict[str, Any], api_u
         _print_colored(f"Error al extraer esquema con cliente: {str(e)}", "red")
         # Como alternativa, usar extracción directa sin cliente
         return extract_db_schema_direct(db_config)
+from typing import Dict, Any
+
+def test_connection(db_config: Dict[str, Any]) -> bool:
+    try:
+        if db_config["type"].lower() == "sql":
+            # Code to test SQL connection...
+            pass
+        elif db_config["type"].lower() in ["nosql", "mongodb"]:
+            import pymongo
+            
+            # Create MongoDB client
+            client = pymongo.MongoClient(db_config["connection_string"])
+            client.admin.command('ping')  # Test connection
+            
+            return True
+        else:
+            _print_colored("Unsupported database type.", "red")
+            return False
+    except Exception as e:
+        _print_colored(f"Failed to connect to the database: {str(e)}", "red")
+        return False
 
 def extract_schema_to_file(api_key: str, config_id: Optional[str] = None, output_file: Optional[str] = None, api_url: Optional[str] = None) -> bool:
     """
-    Extrae el esquema de la base de datos y lo guarda en un archivo.
+    Extracts the database schema and saves it to a file.
     
     Args:
-        api_key: API Key para identificar la configuración
-        config_id: ID de configuración específico (opcional)
-        output_file: Ruta al archivo donde guardar el esquema
-        api_url: URL opcional de la API
+        api_key: API Key to identify the configuration
+        config_id: Specific configuration ID (optional)
+        output_file: Path to the file where the schema will be saved
+        api_url: Optional API URL
         
     Returns:
-        True si se extrae correctamente, False en caso contrario
+        True if extraction is successful, False otherwise
     """
     try:
     # Importación explícita con try-except para manejar errores
@@ -306,12 +327,12 @@ def extract_schema_to_file(api_key: str, config_id: Optional[str] = None, output
 
 def show_db_schema(api_token: str, config_id: Optional[str] = None, api_url: Optional[str] = None) -> None:
     """
-    Muestra el esquema de la base de datos configurada.
+    Displays the schema of the configured database.
     
     Args:
-        api_token: Token de API
-        config_id: ID de configuración específico (opcional)
-        api_url: URL opcional de la API
+        api_token: API token
+        config_id: Specific configuration ID (optional)
+        api_url: Optional API URL
     """
     try:
         # Importación explícita con try-except para manejar errores
@@ -386,7 +407,7 @@ def show_db_schema(api_token: str, config_id: Optional[str] = None, api_url: Opt
                 api_token=api_token,
                 config_id=selected_config_id,
                 api_url=api_url,
-                skip_verification=True  # Omitimos verificación para simplificar
+                skip_verification=True  # Skip verification for simplicity
             )
             """
             
@@ -534,16 +555,16 @@ def show_db_schema(api_token: str, config_id: Optional[str] = None, api_url: Opt
 
 def get_schema_with_dynamic_import(api_token: str, config_id: str, db_config: Dict[str, Any], api_url: Optional[str] = None) -> Dict[str, Any]:
     """
-    Obtiene el esquema de la base de datos usando importación dinámica.
+    Retrieves the database schema using dynamic import.
     
     Args:
-        api_token: Token de API
-        config_id: ID de configuración
-        db_config: Configuración de la base de datos
-        api_url: URL opcional de la API
+        api_token: API token
+        config_id: Configuration ID
+        db_config: Database configuration
+        api_url: Optional API URL
         
     Returns:
-        Esquema de la base de datos
+        Database schema
     """
     try:
         # Importación dinámica del módulo core

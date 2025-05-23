@@ -19,14 +19,14 @@ except ImportError:
 from corebrain.db.connector import DatabaseConnector
 
 class SQLConnector(DatabaseConnector):
-    """Conector optimizado para bases de datos SQL"""
+    """Optimized connector for SQL databases."""
     
     def __init__(self, config: Dict[str, Any]):
         """
-        Inicializa el conector SQL con la configuración proporcionada.
+        Initializes the SQL connector with the provided configuration.
         
         Args:
-            config: Diccionario con la configuración de conexión
+            config: Dictionary with the connection configuration
         """
         super().__init__(config)
         self.conn = None
@@ -37,10 +37,10 @@ class SQLConnector(DatabaseConnector):
     
     def connect(self) -> bool:
         """
-        Establece conexión con timeout optimizado
+        Establishes a connection with optimized timeout.
         
         Returns:
-            True si la conexión fue exitosa, False en caso contrario
+            True if the connection was successful, False otherwise
         """
         try:
             start_time = time.time()
@@ -128,15 +128,15 @@ class SQLConnector(DatabaseConnector):
     def extract_schema(self, sample_limit: int = 5, table_limit: Optional[int] = None, 
                       progress_callback: Optional[Callable] = None) -> Dict[str, Any]:
         """
-        Extrae el esquema con límites y progreso
+        Extracts the schema with limits and progress.
         
         Args:
-            sample_limit: Límite de muestras de datos por tabla
-            table_limit: Límite de tablas a procesar (None para todas)
-            progress_callback: Función opcional para reportar progreso
+            sample_limit: Data sample limit per table
+            table_limit: Limit of tables to process (None for all)
+            progress_callback: Optional function to report progress
             
         Returns:
-            Diccionario con el esquema de la base de datos
+            Dictionary with the database schema
         """
         # Asegurar que estamos conectados
         if not self.conn and not self.connect():
@@ -162,13 +162,13 @@ class SQLConnector(DatabaseConnector):
     
     def execute_query(self, query: str) -> List[Dict[str, Any]]:
         """
-        Ejecuta una consulta SQL con manejo de errores mejorado
+        Executes an SQL query with improved error handling.
         
         Args:
-            query: Consulta SQL a ejecutar
+            query: SQL query to execute
             
         Returns:
-            Lista de filas resultantes como diccionarios
+            List of resulting rows as dictionaries
         """
         if not self.conn and not self.connect():
             raise ConnectionError("No se pudo establecer conexión con la base de datos")
@@ -206,7 +206,7 @@ class SQLConnector(DatabaseConnector):
             raise Exception(f"Error al ejecutar consulta (después de reconexión): {str(e)}")
     
     def _execute_sqlite_query(self, query: str) -> List[Dict[str, Any]]:
-        """Ejecuta una consulta en SQLite"""
+        """Executes a query in SQLite."""
         cursor = self.conn.cursor()
         cursor.execute(query)
         
@@ -225,7 +225,7 @@ class SQLConnector(DatabaseConnector):
         return result
     
     def _execute_mysql_query(self, query: str) -> List[Dict[str, Any]]:
-        """Ejecuta una consulta en MySQL"""
+        """Executes a query in MySQL."""
         cursor = self.conn.cursor(dictionary=True)
         cursor.execute(query)
         result = cursor.fetchall()
@@ -233,7 +233,7 @@ class SQLConnector(DatabaseConnector):
         return result
     
     def _execute_postgresql_query(self, query: str) -> List[Dict[str, Any]]:
-        """Ejecuta una consulta en PostgreSQL"""
+        """Executes a query in PostgreSQL."""
         cursor = self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         cursor.execute(query)
         results = [dict(row) for row in cursor.fetchall()]
@@ -242,15 +242,15 @@ class SQLConnector(DatabaseConnector):
     
     def _extract_sqlite_schema(self, sample_limit: int, table_limit: Optional[int], progress_callback: Optional[Callable]) -> Dict[str, Any]:
         """
-        Extrae schema específico para SQLite
+        Extracts specific schema for SQLite.
         
         Args:
-            sample_limit: Número máximo de filas de muestra por tabla
-            table_limit: Número máximo de tablas a extraer
-            progress_callback: Función para reportar progreso
+            sample_limit: Maximum number of sample rows per table
+            table_limit: Maximum number of tables to extract
+            progress_callback: Function to report progress
             
         Returns:
-            Diccionario con el esquema de la base de datos
+            Dictionary with the database schema
         """
         schema = {
             "type": "sql",
@@ -328,15 +328,15 @@ class SQLConnector(DatabaseConnector):
     
     def _extract_mysql_schema(self, sample_limit: int, table_limit: Optional[int], progress_callback: Optional[Callable]) -> Dict[str, Any]:
         """
-        Extrae schema específico para MySQL
+        Extracts specific schema for MySQL.
         
         Args:
-            sample_limit: Número máximo de filas de muestra por tabla
-            table_limit: Número máximo de tablas a extraer
-            progress_callback: Función para reportar progreso
+            sample_limit: Maximum number of sample rows per table
+            table_limit: Maximum number of tables to extract
+            progress_callback: Function to report progress
             
         Returns:
-            Diccionario con el esquema de la base de datos
+            Dictionary with the database schema
         """
         schema = {
             "type": "sql",
@@ -424,15 +424,15 @@ class SQLConnector(DatabaseConnector):
     
     def _extract_postgresql_schema(self, sample_limit: int, table_limit: Optional[int], progress_callback: Optional[Callable]) -> Dict[str, Any]:
         """
-        Extrae schema específico para PostgreSQL con optimizaciones
+        Extracts specific schema for PostgreSQL with optimizations.
         
         Args:
-            sample_limit: Número máximo de filas de muestra por tabla
-            table_limit: Número máximo de tablas a extraer
-            progress_callback: Función para reportar progreso
+            sample_limit: Maximum number of sample rows per table
+            table_limit: Maximum number of tables to extract
+            progress_callback: Function to report progress
             
         Returns:
-            Diccionario con el esquema de la base de datos
+            Dictionary with the database schema
         """
         schema = {
             "type": "sql",
@@ -584,7 +584,7 @@ class SQLConnector(DatabaseConnector):
         return schema
     
     def close(self) -> None:
-        """Cierra la conexión a la base de datos"""
+        """Closes the database connection."""
         if self.conn:
             try:
                 self.conn.close()
@@ -594,5 +594,5 @@ class SQLConnector(DatabaseConnector):
                 self.conn = None
     
     def __del__(self):
-        """Destructor para asegurar que la conexión se cierre"""
+        """Destructor to ensure the connection is closed."""
         self.close()

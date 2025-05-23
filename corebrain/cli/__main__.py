@@ -1,11 +1,11 @@
 """
-Punto de entrada para ejecutar la CLI como módulo.
+Entry point to run the CLI as a module.
 """
 import sys
 from corebrain.cli.commands import main_cli
 
 def main():
-    """Función principal para entry point en pyproject.toml"""
+    """Main function for the entry point in pyproject.toml."""
     return main_cli()
 
 if __name__ == "__main__":

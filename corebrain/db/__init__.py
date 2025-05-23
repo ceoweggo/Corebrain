@@ -1,8 +1,8 @@
 """
-Conectores de bases de datos para Corebrain SDK.
+Database connectors for Corebrain SDK.
 
-Este paquete proporciona conectores para diferentes tipos y 
-motores de bases de datos soportados por Corebrain.
+This package provides connectors for different types and 
+database engines supported by Corebrain.
 """
 from corebrain.db.connector import DatabaseConnector
 from corebrain.db.factory import get_connector

@@ -1,5 +1,5 @@
 """
-Punto de entrada para la CLI de Corebrain para compatibilidad.
+Entry point for the Corebrain CLI for compatibility.
 """
 from corebrain.cli.__main__ import main
 

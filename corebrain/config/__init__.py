@@ -1,8 +1,8 @@
 """
-Gestión de configuración para Corebrain SDK.
+Configuration management for the Corebrain SDK.
 
-Este paquete proporciona funcionalidades para gestionar configuraciones
-de conexión a bases de datos y preferencias del SDK.
+This package provides functionality to manage database connection configurations
+and SDK preferences.
 """
 from .manager import ConfigManager
 

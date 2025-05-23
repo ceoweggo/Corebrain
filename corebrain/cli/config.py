@@ -9,7 +9,7 @@ from typing import Dict, Any, List, Optional, Tuple
 from datetime import datetime
 
 from corebrain.cli.common import DEFAULT_API_URL, DEFAULT_SSO_URL
-from corebrain.cli.auth import authenticate_with_sso
+from corebrain.cli.auth.sso import authenticate_with_sso, authenticate_with_sso_and_api_key_request
 from corebrain.cli.utils import print_colored, ProgressTracker
 from corebrain.db.engines import get_available_engines
 from corebrain.config.manager import ConfigManager
@@ -57,7 +57,7 @@ def get_api_credential(args_token: Optional[str] = None, sso_url: Optional[str] 
     
     # 4. Try SSO authentication
     print_colored("Attempting authentication via SSO...", "blue")
-    api_key, user_data, api_token = authenticate_with_sso(sso_url or DEFAULT_SSO_URL)
+    api_key, user_data, api_token = authenticate_with_sso_and_api_key_request(sso_url or DEFAULT_SSO_URL)
     print("Exit from authenticate_with_sso: ", datetime.now())
     if api_key:
         # Save for future use

@@ -1,5 +1,5 @@
 """
-Gestor de configuraciones para Corebrain SDK.
+Configuration manager for the Corebrain SDK.
 """
 
 import json
@@ -7,13 +7,57 @@ import uuid
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 from cryptography.fernet import Fernet
-
 from corebrain.utils.serializer import serialize_to_json
 from corebrain.core.common import logger
 
+# Made by Lukasz
+# get data from pyproject.toml
+def load_project_metadata():
+    pyproject_path = Path(__file__).resolve().parent.parent / "pyproject.toml"
+    try:
+        with open(pyproject_path, "rb") as f:
+            data = tomli.load(f)
+        return data.get("project", {})
+    except (FileNotFoundError, tomli.TOMLDecodeError) as e:
+        print(f"Warning: Could not load project metadata: {e}")
+        return {}
+
+# Made by Lukasz
+# get the name, version, etc.
+def get_config():
+    metadata = load_project_metadata() # ^
+    return {
+        "model": metadata.get("name", "unknown"),
+        "version": metadata.get("version", "0.0.0"),
+        "debug": False,
+        "logging": {"level": "info"}
+    }    
+
+# Made by Lukasz
+# export config to file
+def export_config(filepath="config.json"):
+    config = get_config() # ^
+    with open(filepath, "w") as f:
+        json.dump(config, f, indent=4)
+    print(f"Configuration exported to {filepath}")
+
+# Validates that a configuration with the given ID exists.
+def validate_config(config_id: str):
+    # The API key under which configs are stored
+    api_key = os.environ.get("COREBRAIN_API_KEY", "")
+    manager = ConfigManager()
+    cfg = manager.get_config(api_key, config_id)
+
+    if cfg:
+        print(f"✅ Configuration '{config_id}' is present and valid.")
+        return 0
+    else:
+        print(f"❌ Configuration '{config_id}' not found.")
+        return 1
+    
 # Función para imprimir mensajes coloreados
 def _print_colored(message: str, color: str) -> None:
-    """Versión simplificada de _print_colored que no depende de cli.utils"""
+    """Simplified version of _print_colored that does not depend on cli.utils."""
     colors = {
         "red": "\033[91m",
         "green": "\033[92m",
@@ -25,7 +69,7 @@ def _print_colored(message: str, color: str) -> None:
     print(f"{color_code}{message}{colors['default']}")
 
 class ConfigManager:
-    """Gestor de configuraciones del SDK con seguridad y rendimiento mejorados"""
+    """SDK configuration manager with improved security and performance."""
     
     CONFIG_DIR = Path.home() / ".corebrain"
     CONFIG_FILE = CONFIG_DIR / "config.json"
@@ -39,7 +83,7 @@ class ConfigManager:
         self._load_configs()
     
     def _ensure_config_dir(self) -> None:
-        """Asegura que existe el directorio de configuración."""
+        """Ensures that the configuration directory exists."""
         try:
             self.CONFIG_DIR.mkdir(parents=True, exist_ok=True)
             logger.debug(f"Directorio de configuración asegurado: {self.CONFIG_DIR}")
@@ -49,7 +93,7 @@ class ConfigManager:
             _print_colored(f"Error al crear directorio de configuración: {str(e)}", "red")
     
     def _load_secret_key(self) -> None:
-        """Carga o genera la clave secreta para encriptar datos sensibles."""
+        """Loads or generates the secret key to encrypt sensitive data."""
         try:
             if not self.SECRET_KEY_FILE.exists():
                 key = Fernet.generate_key()
@@ -68,7 +112,7 @@ class ConfigManager:
             self.cipher = Fernet(self.secret_key)
     
     def _load_configs(self) -> Dict[str, Dict[str, Any]]:
-        """Carga las configuraciones guardadas."""
+        """Loads the saved configurations."""
         if not self.CONFIG_FILE.exists():
             _print_colored(f"Archivo de configuración no encontrado: {self.CONFIG_FILE}", "yellow")
             return {}
@@ -101,7 +145,7 @@ class ConfigManager:
             return {}
     
     def _save_configs(self) -> None:
-        """Guarda las configuraciones actuales."""
+        """Saves the current configurations."""
         try:
             configs_json = serialize_to_json(self.configs)
             encrypted_data = self.cipher.encrypt(json.dumps(configs_json).encode()).decode()
@@ -115,15 +159,15 @@ class ConfigManager:
     
     def add_config(self, api_key: str, db_config: Dict[str, Any], config_id: Optional[str] = None) -> str:
         """
-        Añade una nueva configuración.
+        Adds a new configuration.
         
         Args:
-            api_key: API Key seleccionada
-            db_config: Configuración de la base de datos
-            config_id: ID opcional para la configuración (se genera uno si no se proporciona)
+            api_key: Selected API Key
+            db_config: Database configuration
+            config_id: Optional ID for the configuration (one is generated if not provided)
             
         Returns:
-            ID de la configuración
+            Configuration ID
         """
         if not config_id:
             config_id = str(uuid.uuid4())
@@ -142,39 +186,39 @@ class ConfigManager:
     
     def get_config(self, api_key_selected: str, config_id: str) -> Optional[Dict[str, Any]]:
         """
-        Obtiene una configuración específica.
+        Retrieves a specific configuration.
         
         Args:
-            api_key_selected: API Key seleccionada
-            config_id: ID de la configuración
+            api_key_selected: Selected API Key
+            config_id: Configuration ID
             
         Returns:
-            Configuración o None si no existe
+            Configuration or None if it does not exist
         """
         return self.configs.get(api_key_selected, {}).get(config_id)
     
     def list_configs(self, api_key_selected: str) -> List[str]:
         """
-        Lista los IDs de configuración disponibles para una API Key.
+        Lists the available configuration IDs for an API Key.
         
         Args:
-            api_key_selected: API Key seleccionada
+            api_key_selected: Selected API Key
             
         Returns:
-            Lista de IDs de configuración
+            List of configuration IDs
         """
         return list(self.configs.get(api_key_selected, {}).keys())
     
     def remove_config(self, api_key_selected: str, config_id: str) -> bool:
         """
-        Elimina una configuración.
+        Deletes a configuration.
         
         Args:
-            api_key_selected: API Key seleccionada
-            config_id: ID de la configuración
+            api_key_selected: Selected API Key
+            config_id: Configuration ID
             
         Returns:
-            True si se eliminó correctamente, False en caso contrario
+            True if deleted successfully, False otherwise
         """
         if api_key_selected in self.configs and config_id in self.configs[api_key_selected]:
             del self.configs[api_key_selected][config_id]

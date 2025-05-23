@@ -1,5 +1,5 @@
 """
-Utilidades para pruebas y validación de componentes.
+Utilities for testing and validating components.
 """
 import json
 import random
@@ -11,13 +11,13 @@ from corebrain.network.client import http_session
 
 def generate_test_question_from_schema(schema: Dict[str, Any]) -> str:
     """
-    Genera una pregunta de prueba basada en el esquema de la base de datos.
+    Generates a test question based on the database schema.
     
     Args:
-        schema: Esquema de la base de datos
+        schema: Database schema
         
     Returns:
-        Pregunta de prueba generada
+        Generated test question
     """
     if not schema or not schema.get("tables"):
         return "¿Cuáles son las tablas disponibles?"
@@ -59,16 +59,16 @@ def generate_test_question_from_schema(schema: Dict[str, Any]) -> str:
 
 def test_natural_language_query(api_token: str, db_config: Dict[str, Any], api_url: Optional[str] = None, user_data: Optional[Dict[str, Any]] = None) -> bool:
     """
-    Prueba una consulta de lenguaje natural.
+    Tests a natural language query.
     
     Args:
-        api_token: Token de API
-        db_config: Configuración de la base de datos
-        api_url: URL opcional de la API
-        user_data: Datos del usuario
+        api_token: API token
+        db_config: Database configuration
+        api_url: Optional API URL
+        user_data: User data
 
     Returns:
-        True si la prueba es exitosa, False en caso contrario
+        True if the test is successful, False otherwise
     """
     try:
         print_colored("\nRealizando prueba de consulta en lenguaje natural...", "blue")

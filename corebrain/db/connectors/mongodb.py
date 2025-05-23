@@ -1,5 +1,5 @@
 """
-Conector para bases de datos MongoDB.
+Connector for MongoDB databases.
 """
 
 import time
@@ -18,14 +18,14 @@ except ImportError:
 from corebrain.db.connector import DatabaseConnector
 
 class MongoDBConnector(DatabaseConnector):
-    """Conector optimizado para MongoDB"""
+    """Optimized connector for MongoDB."""
     
     def __init__(self, config: Dict[str, Any]):
         """
-        Inicializa el conector MongoDB con la configuración proporcionada.
+        Initializes the MongoDB connector with the provided configuration.
         
         Args:
-            config: Diccionario con la configuración de conexión
+            config: Dictionary with the connection configuration
         """
         super().__init__(config)
         self.client = None
@@ -38,10 +38,10 @@ class MongoDBConnector(DatabaseConnector):
     
     def connect(self) -> bool:
         """
-        Establece conexión con timeout optimizado
+        Establishes a connection with optimized timeout.
         
         Returns:
-            True si la conexión fue exitosa, False en caso contrario
+            True if the connection was successful, False otherwise
         """
         if not PYMONGO_AVAILABLE:
             raise ImportError("pymongo no está instalado. Instálalo con 'pip install pymongo'")
@@ -131,15 +131,15 @@ class MongoDBConnector(DatabaseConnector):
     def extract_schema(self, sample_limit: int = 5, collection_limit: Optional[int] = None, 
                       progress_callback: Optional[Callable] = None) -> Dict[str, Any]:
         """
-        Extrae el esquema con límites y progreso para mejorar rendimiento
+        Extracts the schema with limits and progress to improve performance.
         
         Args:
-            sample_limit: Número máximo de documentos de muestra por colección
-            collection_limit: Límite de colecciones a procesar (None para todas)
-            progress_callback: Función opcional para reportar progreso
+            sample_limit: Maximum number of sample documents per collection
+            collection_limit: Limit of collections to process (None for all)
+            progress_callback: Optional function to report progress
             
         Returns:
-            Diccionario con el esquema de la base de datos
+            Dictionary with the database schema
         """
         # Asegurar que estamos conectados
         if not self.client and not self.connect():
@@ -232,14 +232,14 @@ class MongoDBConnector(DatabaseConnector):
     def _extract_document_fields(self, doc: Dict[str, Any], fields: Dict[str, str], 
                                 prefix: str = "", max_depth: int = 3, current_depth: int = 0) -> None:
         """
-        Extrae recursivamente los campos y tipos de un documento MongoDB.
+        Recursively extracts fields and types from a MongoDB document.
         
         Args:
-            doc: Documento a analizar
-            fields: Diccionario donde guardar los campos y tipos
-            prefix: Prefijo para campos anidados
-            max_depth: Profundidad máxima para campos anidados
-            current_depth: Profundidad actual
+            doc: Document to analyze
+            fields: Dictionary to store fields and types
+            prefix: Prefix for nested fields
+            max_depth: Maximum depth for nested fields
+            current_depth: Current depth
         """
         if current_depth >= max_depth:
             return
@@ -275,13 +275,13 @@ class MongoDBConnector(DatabaseConnector):
     
     def _process_document_for_serialization(self, doc: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Procesa un documento para ser serializable a JSON.
+        Processes a document to be JSON serializable.
         
         Args:
-            doc: Documento a procesar
+            doc: Document to process
             
         Returns:
-            Documento procesado
+            Processed document
         """
         processed_doc = {}
         for field, value in doc.items():
@@ -313,13 +313,13 @@ class MongoDBConnector(DatabaseConnector):
     
     def execute_query(self, query: str) -> List[Dict[str, Any]]:
         """
-        Ejecuta una consulta MongoDB con manejo de errores mejorado
+        Executes a MongoDB query with improved error handling.
         
         Args:
-            query: Consulta MongoDB en formato JSON o lenguaje de consulta
+            query: MongoDB query in JSON format or query language
             
         Returns:
-            Lista de documentos resultantes
+            List of resulting documents
         """
         if not self.client and not self.connect():
             raise ConnectionError("No se pudo establecer conexión con MongoDB")
@@ -379,13 +379,13 @@ class MongoDBConnector(DatabaseConnector):
     
     def _parse_query(self, query: str) -> Tuple[Dict[str, Any], Optional[Dict[str, Any]], str, Optional[int]]:
         """
-        Analiza una consulta y extrae los componentes necesarios.
+        Analyzes a query and extracts the necessary components.
         
         Args:
-            query: Consulta en formato string
+            query: Query in string format
             
         Returns:
-            Tupla con (filtro, proyección, nombre de colección, límite)
+            Tuple with (filter, projection, collection name, limit)
         """
         # Intentar parsear como JSON
         try:
@@ -423,14 +423,14 @@ class MongoDBConnector(DatabaseConnector):
     
     def count_documents(self, collection_name: str, filter_dict: Optional[Dict[str, Any]] = None) -> int:
         """
-        Cuenta documentos en una colección
+        Counts documents in a collection.
         
         Args:
-            collection_name: Nombre de la colección
-            filter_dict: Filtro opcional
+            collection_name: Name of the collection
+            filter_dict: Optional filter
             
         Returns:
-            Número de documentos
+            Number of documents
         """
         if not self.client and not self.connect():
             raise ConnectionError("No se pudo establecer conexión con MongoDB")
@@ -444,10 +444,10 @@ class MongoDBConnector(DatabaseConnector):
     
     def list_collections(self) -> List[str]:
         """
-        Devuelve una lista de colecciones en la base de datos
+        Returns a list of collections in the database.
         
         Returns:
-            Lista de nombres de colecciones
+            List of collection names
         """
         if not self.client and not self.connect():
             raise ConnectionError("No se pudo establecer conexión con MongoDB")
@@ -459,7 +459,7 @@ class MongoDBConnector(DatabaseConnector):
             return []
     
     def close(self) -> None:
-        """Cierra la conexión a MongoDB"""
+        """Closes the MongoDB connection."""
         if self.client:
             try:
                 self.client.close()
@@ -470,5 +470,5 @@ class MongoDBConnector(DatabaseConnector):
                 self.db = None
     
     def __del__(self):
-        """Destructor para asegurar que la conexión se cierre"""
+        """Destructor to ensure the connection is closed."""
         self.close()

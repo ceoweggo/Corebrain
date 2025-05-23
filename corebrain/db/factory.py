@@ -1,5 +1,5 @@
 """
-Fábrica de conectores de base de datos.
+Database connector factory.
 """
 from typing import Dict, Any
 
@@ -9,14 +9,14 @@ from corebrain.db.connectors.mongodb import MongoDBConnector
 
 def get_connector(db_config: Dict[str, Any], timeout: int = 10) -> DatabaseConnector:
     """
-    Fábrica de conectores de base de datos según la configuración
+    Database connector factory based on configuration.
     
     Args:
-        db_config: Configuración de la base de datos
-        timeout: Timeout para operaciones de DB
+        db_config: Database configuration
+        timeout: Timeout for DB operations
         
     Returns:
-        Instancia de conector apropiado
+        Instance of the appropriate connector
     """
     db_type = db_config.get("type", "").lower()
     engine = db_config.get("engine", "").lower()
