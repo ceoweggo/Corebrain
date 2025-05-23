@@ -12,14 +12,13 @@ import string
 from typing import Optional, List
 
 from corebrain.cli.common import DEFAULT_API_URL, DEFAULT_SSO_URL, DEFAULT_PORT, SSO_CLIENT_ID, SSO_CLIENT_SECRET
-from corebrain.cli.auth.sso import authenticate_with_sso, authenticate_with_sso_and_api_key_request
+from corebrain.cli.auth.sso import authenticate_with_sso, authenticate_with_sso_and_api_key_request, save_api_token, load_api_token
 from corebrain.cli.config import configure_sdk, get_api_credential
 from corebrain.cli.utils import print_colored
 from corebrain.config.manager import ConfigManager
 from corebrain.config.manager import export_config
 from corebrain.config.manager import validate_config
 from corebrain.lib.sso.auth import GlobodainSSOAuth
-from corebrain.core.client import Corebrain
 
 def main_cli(argv: Optional[List[str]] = None) -> int:
     """
@@ -66,10 +65,9 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
         parser.add_argument("--test-connection",action="store_true",help="Tests the connection to the Corebrain API using the provide credentials")
         parser.add_argument("--export-config",action="store_true",help="Exports the current configuration to a file")
         parser.add_argument("--gui", action="store_true", help="Check setup and launch the web interface")
-
         parser.add_argument("--create-api-key", action="store_true", help="Create a new API Key")
-        parser.add_argument("--key-name", help="Name of the new API Key")
-        parser.add_argument("--key-level", choices=["read", "write", "admin"], default="read", help="Access level for the new API Key")
+        parser.add_argument("--key-name", help="Sets name of the new API Key")
+        parser.add_argument("--key-level", choices=["read", "write", "admin"], default="read", help="Specifies access level for the new API Key")
         
         args = parser.parse_args(argv)
         
@@ -225,6 +223,8 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
             if api_token:
                 # Save the general token for future use
                 os.environ["COREBRAIN_API_TOKEN"] = api_token
+                save_api_token(api_token)
+                print("✅ API token saved.")
             
             if api_key:
                 # Save the specific API key for future use
@@ -435,15 +435,50 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
             print_colored(f"GUI: {url}", "cyan")
             webbrowser.open(url)
         
+        # Handles the CLI command to create a new API key using stored credentials (token from SSO)
+        if args.create_api_key:
+        
+            api_token = load_api_token()
+            if not api_token:
+                print_colored("❌ Missing valid API token. Please log in using --login.", "red")
+                return 1
 
+            key_name = args.key_name or "default-key"
+            key_level = args.key_level or "read"
 
+            api_url = args.api_url or os.environ.get("COREBRAIN_API_URL") or DEFAULT_API_URL
 
+            payload = {
+                "name": key_name,
+                "access_level": key_level
+            }
 
+            headers = {
+                "Authorization": f"Bearer {api_token}",
+                "Content-Type": "application/json"
+            }
 
+            try:
+                response = requests.post(
+                    f"{api_url}/api/auth/api-keys",
+                    json=payload,
+                    headers=headers
+                )
 
+                if response.status_code == 200:
+                    key_data = response.json()
+                    print_colored("✅ API Key was created successfully:", "green")
+                    print_colored(f"Name: {key_data['name']}", "blue")
+                    print_colored(f"Key: {key_data['key']}", "blue")
+                else:
+                    print_colored(f"❌ Error while creating API Key: {response.text}", "red")
+                    return 1
 
+            except Exception as e:
+                print_colored(f"❌ Exception occurred while creating API Key: {str(e)}", "red")
+                return 1
 
-
+            return 0
 
         else:
             # If no option was specified, show help

@@ -8,6 +8,7 @@ import socketserver
 import threading
 import urllib.parse
 import time
+import json
 
 from typing import Tuple, Dict, Any, Optional
 
@@ -450,3 +451,18 @@ def authenticate_with_sso_and_api_key_request(sso_url: str) -> Tuple[Optional[st
         except:
             # If there's any error closing the server, we ignore it
             pass
+
+def save_api_token(api_token: str):
+    config_dir = os.path.join(os.path.expanduser("~"), ".corebrain")
+    os.makedirs(config_dir, exist_ok=True)
+
+    token_path = os.path.join(config_dir, "token.json")
+    with open(token_path, "w") as f:
+        json.dump({"api_token": api_token}, f)
+
+def load_api_token() -> str:
+    token_path = os.path.join(os.path.expanduser("~"), ".corebrain", "token.json")
+    if os.path.exists(token_path):
+        with open(token_path, "r") as f:
+            return json.load(f).get("api_token")
+    return None
