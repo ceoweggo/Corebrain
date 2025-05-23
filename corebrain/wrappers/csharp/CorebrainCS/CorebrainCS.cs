@@ -130,6 +130,145 @@ public class CorebrainCS(string pythonPath = "python", string scriptPath = "core
 
     return ExecuteCommand(string.Join(" ", args));
   }
+
+public string WoAmI() {
+    return ExecuteCommand("--woami");
+}
+
+public string CheckStatus() {
+    return ExecuteCommand("--check-status");
+}
+
+public string CheckStatus(string? apiUrl = null, string? token = null) {
+    var args = new List<string> { "--check-status" };
+    
+    if (!string.IsNullOrEmpty(apiUrl)) {
+        if (!Uri.IsWellFormedUriString(apiUrl, UriKind.Absolute))
+            throw new ArgumentException("Invalid API URL format", nameof(apiUrl));
+        
+        args.Add($"--api-url \"{apiUrl}\"");
+    }
+    
+    if (!string.IsNullOrEmpty(token))
+        args.Add($"--token \"{token}\"");
+
+    return ExecuteCommand(string.Join(" ", args));
+}
+
+public string TaskStatus(string taskId) {
+    if (string.IsNullOrWhiteSpace(taskId)) {
+        throw new ArgumentException("Task ID cannot be empty", nameof(taskId));
+    }
+
+    return ExecuteCommand($"--task-id {taskId}");
+}
+
+public string TaskStatus(string taskId, string? apiUrl = null, string? token = null) {
+    if (string.IsNullOrWhiteSpace(taskId)) {
+        throw new ArgumentException("Task ID cannot be empty", nameof(taskId));
+    }
+
+    var args = new List<string> { $"--task-id {taskId}" };
+
+    if (!string.IsNullOrEmpty(apiUrl)) {
+        if (!Uri.IsWellFormedUriString(apiUrl, UriKind.Absolute))
+            throw new ArgumentException("Invalid API URL format", nameof(apiUrl));
+        
+        args.Add($"--api-url \"{apiUrl}\"");
+    }
+
+    if (!string.IsNullOrEmpty(token))
+        args.Add($"--token \"{token}\"");
+
+    return ExecuteCommand(string.Join(" ", args));
+}
+
+public string ValidateConfig() {
+    return ExecuteCommand("--validate-config");
+}
+
+public string ValidateConfig(string configFilePath) {
+    if (string.IsNullOrWhiteSpace(configFilePath)) {
+        throw new ArgumentException("Config file path cannot be empty", nameof(configFilePath));
+    }
+
+    if (!File.Exists(configFilePath)) {
+        throw new FileNotFoundException("Config file not found", configFilePath);
+    }
+
+    return ExecuteCommand($"--validate-config \"{configFilePath}\"");
+}
+
+  public string ValidateConfig(string? apiUrl = null, string? token = null) {
+    var args = new List<string> { "--validate-config" };
+
+    if (!string.IsNullOrEmpty(apiUrl)) {
+      if (!Uri.IsWellFormedUriString(apiUrl, UriKind.Absolute))
+        throw new ArgumentException("Invalid API URL format", nameof(apiUrl));
+
+      args.Add($"--api-url \"{apiUrl}\"");
+    }
+
+    if (!string.IsNullOrEmpty(token))
+      args.Add($"--token \"{token}\"");
+
+    return ExecuteCommand(string.Join(" ", args));
+  }
+public string TestConnection() {
+    return ExecuteCommand("--test-connection");
+}
+
+  public string TestConnection(string? apiUrl = null, string? token = null, bool fullDiagnostics = false)
+  {
+    var args = new List<string> { "--test-connection" };
+
+    if (!string.IsNullOrEmpty(apiUrl))
+    {
+      if (!Uri.IsWellFormedUriString(apiUrl, UriKind.Absolute))
+        throw new ArgumentException("Invalid API URL format", nameof(apiUrl));
+
+      args.Add($"--api-url \"{apiUrl}\"");
+    }
+
+    if (!string.IsNullOrEmpty(token))
+      args.Add($"--token \"{token}\"");
+
+    if (fullDiagnostics)
+      args.Add("--full");
+
+    return ExecuteCommand(string.Join(" ", args));
+  }
+
+public string ExportConfig() {
+    return ExecuteCommand("--export-config");
+}
+
+public string ExportConfig(string outputDirectory, string? configId = null, bool overwrite = false) {
+    if (string.IsNullOrWhiteSpace(outputDirectory)) {
+        throw new ArgumentException("Output directory cannot be empty", nameof(outputDirectory));
+    }
+
+    if (!Directory.Exists(outputDirectory)) {
+        throw new DirectoryNotFoundException($"Directory not found: {outputDirectory}");
+    }
+
+    var args = new List<string> { "--export-config" };
+
+    args.Add($"--output \"{outputDirectory}\"");
+
+    if (!string.IsNullOrEmpty(configId)) {
+        args.Add($"--config-id \"{configId}\"");
+    }
+
+    if (overwrite) {
+        args.Add("--overwrite");
+    }
+
+
+    return ExecuteCommand(string.Join(" ", args));
+}
+
+
   public string ExecuteCommand(string arguments)
   {
     if (_verbose)
