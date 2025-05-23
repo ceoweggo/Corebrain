@@ -140,6 +140,7 @@ Our maintainers follow semantic versioning (MAJOR.MINOR.PATCH):
 
 If you need help with anything:
 - Join our [Discord community](https://discord.gg/m2AXjPn2yV)
+- Join our [Whatsapp Channel](https://whatsapp.com/channel/0029Vap43Vy5EjxvR4rncQ1I)
 - Ask questions in the GitHub Discussions
 - Contact the maintainers at ruben@globodain.com
 
