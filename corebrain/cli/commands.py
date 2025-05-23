@@ -258,7 +258,8 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
             if args.configure:
                 configure_sdk(api_token, api_key, api_url, sso_url, user_data)
             elif args.list_configs:
-                ConfigManager.list_configs(api_key, api_url)
+                manager = ConfigManager()
+                manager.list_configs(api_key)
             elif args.remove_config:
                 ConfigManager.remove_config(api_key, api_url)
             elif args.show_schema:
