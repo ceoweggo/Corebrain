@@ -6,5 +6,3 @@ Console.WriteLine("Hello, World!");
 var corebrain = new CorebrainCS.CorebrainCS("../../../../venv/Scripts/python.exe", "../../../cli", false);
 
 Console.WriteLine(corebrain.Version());
-
-
