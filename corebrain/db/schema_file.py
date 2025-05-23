@@ -233,11 +233,17 @@ def extract_schema_with_lazy_init(api_key: str, db_config: Dict[str, Any], api_u
         return extract_db_schema_direct(db_config)
 from typing import Dict, Any
 
+#Function to test connection
+# This function is used to test the connection to the database
+# It takes a dictionary with the database configuration as input
+# and returns True if the connection is successful, otherwise False.
+
 def test_connection(db_config: Dict[str, Any]) -> bool:
     try:
         if db_config["type"].lower() == "sql":
             # Code to test SQL connection...
             pass
+        #in case of nosql or mongodb
         elif db_config["type"].lower() in ["nosql", "mongodb"]:
             import pymongo
             
@@ -247,11 +253,13 @@ def test_connection(db_config: Dict[str, Any]) -> bool:
             
             return True
         else:
+            # Handle unsupported database types
             _print_colored("Unsupported database type.", "red")
             return False
     except Exception as e:
+        # Handle connection errors
         _print_colored(f"Failed to connect to the database: {str(e)}", "red")
-        return False
+        return False 
 
 def extract_schema_to_file(api_key: str, config_id: Optional[str] = None, output_file: Optional[str] = None, api_url: Optional[str] = None) -> bool:
     """

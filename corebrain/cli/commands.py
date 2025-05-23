@@ -64,17 +64,20 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
         
         args = parser.parse_args(argv)
         
-        
-        # Made by Lukasz
+         # Check if the user requested to export configuration
         if args.export_config:
-            export_config(args.export_config)
-            # --> config/manager.py --> export_config
+            export_config(args.export_config) # Export the configuration to a file (default: config.json)
+            # Implementation: config/manager.py -> export_config
 
+        # Check if the user requested to validate a configuration
         if args.validate_config:
+            # Ensure a config ID is provided; it's required for validation
             if not args.config_id:
                 print_colored("Error: --config-id is required for validation", "red")
                 return 1
+            # Validate the configuration and return the result
             return validate_config(args.config_id)
+            # Implementation: config/manager.py
 
 
         # Show version
@@ -151,69 +154,86 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
                     print_colored("You can create an API Key in the Corebrain dashboard.", "yellow")
                 return 1
             
+        # Check the status of a task in the Corebrain system
         if args.check_status:
+            # Ensure the user provided a task ID
             if not args.task_id:
                 print_colored("❌ Please provide a task ID using --task-id", "red")
                 return 1
-            
-            # Get URLs
+
             api_url = args.api_url or os.environ.get("COREBRAIN_API_URL") or DEFAULT_API_URL
             sso_url = args.sso_url or os.environ.get("COREBRAIN_SSO_URL") or DEFAULT_SSO_URL
-            
-            # Prioritize api_key if explicitly provided
+
             token_arg = args.api_key if args.api_key else args.token
-            
+
             # Get API credentials
             api_key, user_data, api_token = get_api_credential(token_arg, sso_url)
 
+            # if no valid API key is available, abort and inform the user
             if not api_key:
                 print_colored("❌ API Key is required to check task status. Use --api-key or login via --login", "red")
                 return 1
 
             try:
+                # Prepare the request to query task status
                 task_id = args.task_id
                 headers = {
-                    "Authorization": f"Bearer {api_key}",
+                    "Authorization": f"Bearer {api_key}",  # Use the API key for authentication
                     "Accept": "application/json"
                 }
-                url = f"{api_url}/tasks/{task_id}/status"
+                url = f"{api_url}/tasks/{task_id}/status"  # Endpoint to fetch task status
+
+                # Send a get request to the API to fetch the task status
                 response = requests.get(url, headers=headers)
 
+                # if task does not exist, inform the user
                 if response.status_code == 404:
                     print_colored(f"❌ Task with ID '{task_id}' not found.", "red")
                     return 1
 
+                # Raise an error if the request failed for other reasons
                 response.raise_for_status()
+
+                # Parse the JSON response and extract the status field
                 data = response.json()
                 status = data.get("status", "unknown")
 
+                # Print the task status to the user
                 print_colored(f"✅ Task '{task_id}' status: {status}", "green")
                 return 0
+
             except Exception as e:
+                # handle unexpected errors during request or response parsing
                 print_colored(f"❌ Failed to check status: {str(e)}", "red")
                 return 1
-
+            
         if args.whoami:
             try:
-                #downloading user data
+                # Get the SSO URL from arguments, environment variable, or fallback to default
                 sso_url = args.sso_url or os.environ.get("COREBRAIN_SSO_URL") or DEFAULT_SSO_URL
+                # Select token source: prioritize API key if provided, otherwise use general token
                 token_arg = args.api_key if args.api_key else args.token
 
-                #using saved data about user 
+                # Retrieve API credentials, including user data and token, using the selected metho
                 api_key, user_data, api_token = get_api_credential(token_arg, sso_url)
-                #printing user data
+
+
+                # Check if user data was successfully retrieved
                 if user_data:
+                    # Print user information in a readable format
                     print_colored("User Data:", "blue")
                     for k, v in user_data.items():
                         print(f"{k}: {v}")
                 else:
+                    # If no user data was found, inform the user they might not be logged in
                     print_colored("❌ Can't find data about user, be sure that you are logged into  --login.", "red")
-                    return 1
+                    return 1 # Return error code
 
-                return 0
+                return 0 #success
             except Exception as e:
+                # Handle unexpected errors, such as network issues or token errors
                 print_colored(f"❌ Error when downloading data about user {str(e)}", "red")
-                return 1
+                return 1 # Return error code
         
         # Operations that require credentials: configure, list, remove or show schema
         if args.configure or args.list_configs or args.remove_config or args.show_schema or args.extract_schema:
@@ -246,6 +266,11 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
             elif args.extract_schema:
                 extract_schema_to_file(api_key, args.config_id, args.output_file, api_url)
         
+#Function to test connection to the Corebrain API
+# This function is called when the --test-connection option is used
+# It retrieves the API credentials and tests the connection
+# It uses the test_connection function from the schema_file module
+
         if args.test_connection:
             # Test connection to the Corebrain API
             api_url = args.api_url or os.environ.get("COREBRAIN_API_URL", DEFAULT_API_URL)
@@ -255,10 +280,13 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
                 # Retrieve API credentials
                 api_key, user_data, api_token = get_api_credential(args.token, sso_url)
             except Exception as e:
+                # Handle errors while retrieving credentials
                 print_colored(f"Error while retrieving API credentials: {e}", "red")
                 return 1
 
             if not api_key:
+                # If no API key is provided, print an error message
+                # and return an error code
                 print_colored(
                     "Error: An API key is required. You can generate one at dashboard.corebrain.com.",
                     "red"
@@ -267,6 +295,8 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
 
             try:
                 # Test the connection
+                # Import the test_connection function from the schema_file module
+                # and call it with the provided API key and URL
                 from corebrain.db.schema_file import test_connection
                 test_connection(api_key, api_url)
                 print_colored("Successfully connected to Corebrain API.", "green")
@@ -280,7 +310,7 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
             parser.print_help()
             print_colored("\nTip: Use 'corebrain --login' to login via SSO.", "blue")
         
-        return 0
+        return 0      
     except Exception as e:
         print_colored(f"Error: {str(e)}", "red")
         import traceback

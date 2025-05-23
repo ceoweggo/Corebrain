@@ -4,49 +4,47 @@ Gestor de configuraciones para Corebrain SDK.
 
 import json
 import uuid
+import tomli
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 from cryptography.fernet import Fernet
 from corebrain.utils.serializer import serialize_to_json
 from corebrain.core.common import logger
 
-# Made by Lukasz
-# get data from pyproject.toml
+# Parses and loads project metadata (name, version, etc.) from pyproject.toml
 def load_project_metadata():
-    pyproject_path = Path(__file__).resolve().parent.parent / "pyproject.toml"
+    pyproject_path = Path(__file__).resolve().parent.parent.parent / "pyproject.toml"
     try:
         with open(pyproject_path, "rb") as f:
-            data = tomli.load(f)
-        return data.get("project", {})
+            data = tomli.load(f) # Load TOML data using tomli
+        return data.get("project", {}) # Return project metadata section
     except (FileNotFoundError, tomli.TOMLDecodeError) as e:
         print(f"Warning: Could not load project metadata: {e}")
-        return {}
+        return {} # Return empty dict if file is missing or malformed
 
-# Made by Lukasz
-# get the name, version, etc.
+
+# Constructs a basic configuration dictionary from project metadata
 def get_config():
-    metadata = load_project_metadata() # ^
+    metadata = load_project_metadata() # Fetch metadata from pyproject.toml
     return {
-        "model": metadata.get("name", "unknown"),
-        "version": metadata.get("version", "0.0.0"),
-        "debug": False,
-        "logging": {"level": "info"}
+        "model": metadata.get("name", "unknown"), # Get project name or use 'unknown'
+        "version": metadata.get("version", "0.0.0"), # Get version or use '0.0.0'
+        "debug": False, # Hardcoded debug flag
+        "logging": {"level": "info"} # Logging level
     }    
 
-# Made by Lukasz
-# export config to file
+# Writes the current config to a JSON file (default: config.json)
 def export_config(filepath="config.json"):
-    config = get_config() # ^
+    config = get_config() # Get current config
     with open(filepath, "w") as f:
-        json.dump(config, f, indent=4)
+        json.dump(config, f, indent=4) # Save config to file with indentation
     print(f"Configuration exported to {filepath}")
 
-# Validates that a configuration with the given ID exists.
+# Validates that a configuration with the given ID exists remotely
 def validate_config(config_id: str):
-    # The API key under which configs are stored
-    api_key = os.environ.get("COREBRAIN_API_KEY", "")
-    manager = ConfigManager()
-    cfg = manager.get_config(api_key, config_id)
+    api_key = os.environ.get("COREBRAIN_API_KEY", "") # Get API key from environment
+    manager = ConfigManager() # Create ConfigManager instance
+    cfg = manager.get_config(api_key, config_id) # Attempt to retrieve config
 
     if cfg:
         print(f"✅ Configuration '{config_id}' is present and valid.")
@@ -54,6 +52,7 @@ def validate_config(config_id: str):
     else:
         print(f"❌ Configuration '{config_id}' not found.")
         return 1
+
     
 # Función para imprimir mensajes coloreados
 def _print_colored(message: str, color: str) -> None:
