@@ -14,84 +14,166 @@ public class CorebrainCS(string pythonPath = "python", string scriptPath = "core
   private readonly string _scriptPath = Path.GetFullPath(scriptPath);
   private readonly bool _verbose = verbose;
 
-
+  /// <summary>
+  /// Executes the CLI with the "--help" flag.
+  /// </summary>
+  /// <returns>Help text from the Corebrain CLI.</returns>
   public string Help() {
     return ExecuteCommand("--help");
   }
 
-  public string Version() {
+  /// <summary>
+  /// Executes the CLI with the "--version" flag.
+  /// </summary>
+  /// <returns>The version of the Corebrain CLI.</returns>
+  public string Version()
+  {
     return ExecuteCommand("--version");
   }
 
-  public string Configure() {
+  /// <summary>
+  /// Starts interactive configuration of the Corebrain CLI.
+  /// </summary>
+  /// <returns>Output from the configuration process.</returns>
+  public string Configure()
+  {
     return ExecuteCommand("--configure");
   }
 
-  public string ListConfigs() {
+  /// <summary>
+  /// Lists all stored configurations.
+  /// </summary>
+  /// <returns>Configuration listing.</returns>
+  public string ListConfigs()
+  {
     return ExecuteCommand("--list-configs");
   }
 
-  public string RemoveConfig() {
+  /// <summary>
+  /// Removes a stored configuration.
+  /// </summary>
+  /// <returns>Result of the remove operation.</returns>
+  public string RemoveConfig()
+  {
     return ExecuteCommand("--remove-config");
   }
 
-  public string ShowSchema() {
+  /// <summary>
+  /// Shows the schema used by Corebrain.
+  /// </summary>
+  /// <returns>The current schema as a string.</returns>
+  public string ShowSchema()
+  {
     return ExecuteCommand("--show-schema");
   }
 
-  public string ExtractSchema() {
+  /// <summary>
+  /// Extracts the current schema to the console.
+  /// </summary>
+  /// <returns>The extracted schema.</returns>
+  public string ExtractSchema()
+  {
     return ExecuteCommand("--extract-schema");
   }
 
-  public string ExtractSchemaToDefaultFile() {
+  /// <summary>
+  /// Extracts schema and saves it to a default file ("test").
+  /// </summary>
+  /// <returns>CLI output from the extract operation.</returns>
+  public string ExtractSchemaToDefaultFile()
+  {
     return ExecuteCommand("--extract-schema --output-file test");
   }
-
-  public string ConfigID() {
+  
+  /// <summary>
+  /// Extracts schema with a specific configuration ID.
+  /// </summary>
+  /// <returns>CLI output from the operation.</returns>
+  public string ConfigID()
+  {
     return ExecuteCommand("--extract-schema --config-id config");
   }
 
-  public string SetToken(string token) {
+  /// <summary>
+  /// Sets the authentication token.
+  /// </summary>
+  /// <param name="token">Authentication token.</param>
+  /// <returns>Result of setting the token.</returns>
+  public string SetToken(string token)
+  {
     return ExecuteCommand($"--token {token}");
   }
 
-  public string ApiKey(string apikey) {
+  /// <summary>
+  /// Sets the API key.
+  /// </summary>
+  /// <param name="apikey">API key string.</param>
+  /// <returns>Result of setting the API key.</returns>
+  public string ApiKey(string apikey)
+  {
     return ExecuteCommand($"--api-key {apikey}");
   }
-
-  public string ApiUrl(string apiurl) {
-    if (string.IsNullOrWhiteSpace(apiurl)) {
+  
+  /// <summary>
+  /// Sets the API URL.
+  /// </summary>
+  /// <param name="apiurl">A valid HTTP or HTTPS URL.</param>
+  /// <returns>CLI output after setting the URL.</returns>
+  public string ApiUrl(string apiurl)
+  {
+    if (string.IsNullOrWhiteSpace(apiurl))
+    {
       throw new ArgumentException("API URL cannot be empty or whitespace", nameof(apiurl));
     }
 
     if (!Uri.TryCreate(apiurl, UriKind.Absolute, out var uriResult) ||
-        (uriResult.Scheme != Uri.UriSchemeHttp && uriResult.Scheme != Uri.UriSchemeHttps)) {
+        (uriResult.Scheme != Uri.UriSchemeHttp && uriResult.Scheme != Uri.UriSchemeHttps))
+    {
       throw new ArgumentException("Invalid API URL format. Must be a valid HTTP/HTTPS URL", nameof(apiurl));
     }
 
     var escapedUrl = apiurl.Replace("\"", "\\\"");
     return ExecuteCommand($"--api-url \"{escapedUrl}\"");
   } 
-  public string SsoUrl(string ssoUrl) {
-    if (string.IsNullOrWhiteSpace(ssoUrl)) {
-        throw new ArgumentException("SSO URL cannot be empty or whitespace", nameof(ssoUrl));
+  
+  /// <summary>
+  /// Sets the Single Sign-On (SSO) URL.
+  /// </summary>
+  /// <param name="ssoUrl">A valid SSO URL.</param>
+  /// <returns>CLI output after setting the SSO URL.</returns>
+  public string SsoUrl(string ssoUrl)
+  {
+    if (string.IsNullOrWhiteSpace(ssoUrl))
+    {
+      throw new ArgumentException("SSO URL cannot be empty or whitespace", nameof(ssoUrl));
     }
 
     if (!Uri.TryCreate(ssoUrl, UriKind.Absolute, out var uriResult) ||
-        (uriResult.Scheme != Uri.UriSchemeHttp && uriResult.Scheme != Uri.UriSchemeHttps))  {
-        throw new ArgumentException("Invalid SSO URL format. Must be a valid HTTP/HTTPS URL", nameof(ssoUrl));
+        (uriResult.Scheme != Uri.UriSchemeHttp && uriResult.Scheme != Uri.UriSchemeHttps))
+    {
+      throw new ArgumentException("Invalid SSO URL format. Must be a valid HTTP/HTTPS URL", nameof(ssoUrl));
     }
 
     var escapedUrl = ssoUrl.Replace("\"", "\\\"");
     return ExecuteCommand($"--sso-url \"{escapedUrl}\"");
   }
-  public string Login(string username, string password){
-    if (string.IsNullOrWhiteSpace(username)){
-        throw new ArgumentException("Username cannot be empty or whitespace", nameof(username));
+  
+  /// <summary>
+  /// Logs in using username and password.
+  /// </summary>
+  /// <param name="username">User's username.</param>
+  /// <param name="password">User's password.</param>
+  /// <returns>CLI output from login attempt.</returns>
+  public string Login(string username, string password)
+  {
+    if (string.IsNullOrWhiteSpace(username))
+    {
+      throw new ArgumentException("Username cannot be empty or whitespace", nameof(username));
     }
 
-    if (string.IsNullOrWhiteSpace(password)){
-        throw new ArgumentException("Password cannot be empty or whitespace", nameof(password));
+    if (string.IsNullOrWhiteSpace(password))
+    {
+      throw new ArgumentException("Password cannot be empty or whitespace", nameof(password));
     }
 
     var escapedUsername = username.Replace("\"", "\\\"");
@@ -100,36 +182,62 @@ public class CorebrainCS(string pythonPath = "python", string scriptPath = "core
     return ExecuteCommand($"--login --username \"{escapedUsername}\" --password \"{escapedPassword}\"");
   }
 
-  public string LoginWithToken(string token) {
-      if (string.IsNullOrWhiteSpace(token)) {
-          throw new ArgumentException("Token cannot be empty or whitespace", nameof(token));
-      }
+  /// <summary>
+  /// Logs in using an authentication token.
+  /// </summary>
+  /// <param name="token">Authentication token.</param>
+  /// <returns>CLI output from login attempt.</returns>
+  public string LoginWithToken(string token)
+  {
+    if (string.IsNullOrWhiteSpace(token))
+    {
+      throw new ArgumentException("Token cannot be empty or whitespace", nameof(token));
+    }
 
-      var escapedToken = token.Replace("\"", "\\\"");
-      return ExecuteCommand($"--login --token \"{escapedToken}\"");
+    var escapedToken = token.Replace("\"", "\\\"");
+    return ExecuteCommand($"--login --token \"{escapedToken}\"");
   }
 
   //When youre logged in use this function
-  public string TestAuth() {
+  /// <summary>
+  /// Tests authentication status for the currently logged-in user.
+  /// </summary>
+  /// <returns>CLI output from the authentication test.</returns>
+  public string TestAuth()
+  {
     return ExecuteCommand("--test-auth");
   }
 
   //Without beeing logged
-  public string TestAuth(string? apiUrl = null, string? token = null) {
+  /// <summary>
+  /// Tests authentication status using provided token and/or API URL.
+  /// </summary>
+  /// <param name="apiUrl">Optional API URL to use for the test.</param>
+  /// <param name="token">Optional token to use for the test.</param>
+  /// <returns>CLI output from the authentication test.</returns>
+  public string TestAuth(string? apiUrl = null, string? token = null)
+  {
     var args = new List<string> { "--test-auth" };
-            
-    if (!string.IsNullOrEmpty(apiUrl)) {
-        if (!Uri.IsWellFormedUriString(apiUrl, UriKind.Absolute))
-            throw new ArgumentException("Invalid API URL format", nameof(apiUrl));
-                
-        args.Add($"--api-url \"{apiUrl}\"");
-        }
-            
+
+    if (!string.IsNullOrEmpty(apiUrl))
+    {
+      if (!Uri.IsWellFormedUriString(apiUrl, UriKind.Absolute))
+        throw new ArgumentException("Invalid API URL format", nameof(apiUrl));
+
+      args.Add($"--api-url \"{apiUrl}\"");
+    }
+
     if (!string.IsNullOrEmpty(token))
-        args.Add($"--token \"{token}\"");
+      args.Add($"--token \"{token}\"");
 
     return ExecuteCommand(string.Join(" ", args));
   }
+  /// <summary>
+  /// Executes the given CLI command arguments using the configured Python and script paths.
+  /// </summary>
+  /// <param name="arguments">Command-line arguments for the Corebrain CLI.</param>
+  /// <returns>Standard output from the executed command.</returns>
+  /// <exception cref="InvalidOperationException">Thrown if there is an error in the CLI output.</exception>
   public string ExecuteCommand(string arguments)
   {
     if (_verbose)
