@@ -448,6 +448,7 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
 
             api_url = args.api_url or os.environ.get("COREBRAIN_API_URL") or DEFAULT_API_URL
 
+            # Sending request to Corebrain-API
             payload = {
                 "name": key_name,
                 "access_level": key_level
