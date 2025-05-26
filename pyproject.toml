@@ -48,7 +48,10 @@ dev = [
     "isort>=5.12.0",
     "mypy>=1.3.0",
     "flake8>=6.0.0",
+    "sphinx>=8.2.3",
+    "furo>=2024.8.6",
 ]
+
 
 [tool.setuptools]
 packages = ["corebrain"]

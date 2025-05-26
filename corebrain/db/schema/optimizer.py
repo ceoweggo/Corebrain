@@ -1,5 +1,5 @@
 """
-Componentes para optimización de esquemas de base de datos.
+Components for database schema optimization.
 """
 import re
 from typing import Dict, Any, Optional
@@ -9,16 +9,16 @@ from corebrain.utils.logging import get_logger
 logger = get_logger(__name__)
 
 class SchemaOptimizer:
-    """Optimiza el esquema de la base de datos para reducir tamaño de contexto."""
+    """Optimizes the database schema to reduce context size."""
     
     def __init__(self, max_tables: int = 10, max_columns_per_table: int = 15, max_samples: int = 2):
         """
-        Inicializa el optimizador de esquema.
+        Initializes the schema optimizer.
         
         Args:
-            max_tables: Máximo número de tablas a incluir
-            max_columns_per_table: Máximo número de columnas por tabla
-            max_samples: Máximo número de filas de muestra por tabla
+            max_tables: Maximum number of tables to include
+            max_columns_per_table: Maximum number of columns per table
+            max_samples: Maximum number of sample rows per table
         """
         self.max_tables = max_tables
         self.max_columns_per_table = max_columns_per_table
@@ -38,14 +38,14 @@ class SchemaOptimizer:
     
     def optimize_schema(self, db_schema: Dict[str, Any], query: str = None) -> Dict[str, Any]:
         """
-        Optimiza el esquema para reducir su tamaño.
+        Optimizes the schema to reduce its size.
         
         Args:
-            db_schema: Esquema original de la base de datos
-            query: Consulta del usuario (para priorizar tablas relevantes)
+            db_schema: Original database schema
+            query: User query (to prioritize relevant tables)
             
         Returns:
-            Esquema optimizado
+            Optimized schema
         """
         # Crear copia para no modificar el original
         optimized_schema = {

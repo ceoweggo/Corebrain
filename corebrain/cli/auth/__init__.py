@@ -1,8 +1,8 @@
 """
-Módulos de autenticación para CLI de Corebrain.
+Authentication modules for the Corebrain CLI.
 
-Este paquete proporciona funcionalidades para autenticación,
-gestión de tokens y API keys en la CLI de Corebrain.
+This package provides functionality for authentication,
+token management, and API keys in the Corebrain CLI.
 """
 from corebrain.cli.auth.sso import authenticate_with_sso, TokenHandler
 from corebrain.cli.auth.api_keys import (

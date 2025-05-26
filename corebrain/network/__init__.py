@@ -1,8 +1,8 @@
 """
-Componentes de red para Corebrain SDK.
+Network components for Corebrain SDK.
 
-Este paquete proporciona utilidades y clientes para comunicación 
-con la API de Corebrain y otros servicios web.
+This package provides utilities and clients for communication
+with the Corebrain API and other web services.
 """
 from corebrain.network.client import (
     APIClient,

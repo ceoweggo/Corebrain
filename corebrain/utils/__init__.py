@@ -1,8 +1,8 @@
 """
-Utilidades generales para Corebrain SDK.
+General utilities for Corebrain SDK.
 
-Este paquete proporciona utilidades compartidas por diferentes 
-componentes del SDK, como serialización, cifrado y logging.
+This package provides utilities shared by different 
+SDK components, such as serialization, encryption, and logging.
 """
 import logging
 
@@ -21,12 +21,12 @@ def setup_logger(level=logging.INFO,
                 file_path=None, 
                 format_string=None):
     """
-    Configura el logger principal de Corebrain.
-    
+    Configures the main Corebrain logger.
+
     Args:
-        level: Nivel de logging
-        file_path: Ruta a archivo de log (opcional)
-        format_string: Formato de log personalizado
+        level: Logging level
+        file_path: Path to log file (optional)
+        format_string: Custom log format
     """
     # Formato predeterminado
     fmt = format_string or '%(asctime)s - %(name)s - %(levelname)s - %(message)s'

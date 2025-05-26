@@ -1,14 +1,14 @@
 """
-Información sobre motores de bases de datos soportados.
+Information about supported database engines.
 """
 from typing import Dict, List
 
 def get_available_engines() -> Dict[str, List[str]]:
     """
-    Devuelve los motores de base de datos disponibles por tipo
+    Returns the available database engines by type.
     
     Returns:
-        Dict con tipos de DB y lista de motores por tipo
+        Dict with DB types and a list of engines per type
     """
     return {
         "sql": ["sqlite", "mysql", "postgresql"],

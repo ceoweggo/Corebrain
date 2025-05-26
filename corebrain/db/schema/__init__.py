@@ -1,5 +1,5 @@
 """
-Componentes para extracción y optimización de esquemas de base de datos.
+Components for extracting and optimizing database schemas.
 """
 from .extractor import extract_schema
 from .optimizer import SchemaOptimizer

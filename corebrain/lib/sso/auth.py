@@ -16,13 +16,13 @@ class GlobodainSSOAuth:
     
     def requires_auth(self, session_handler):
         """
-        Decorador genérico que verifica si el usuario está autenticado
+        Generic decorator that checks if the user is authenticated
         
         Args:
-            session_handler: Función que obtiene el objeto de sesión actual
+            session_handler: Function that retrieves the current session object
             
         Returns:
-            Una función decoradora que puede aplicarse a rutas/vistas
+            A decorator function that can be applied to routes/views
         """
         def decorator(func):
             def wrapper(*args, **kwargs):
@@ -41,13 +41,13 @@ class GlobodainSSOAuth:
     
     def get_login_url(self, state=None):
         """
-        Genera la URL para iniciar la autenticación SSO
+        Generates the URL to initiate SSO authentication
         
         Args:
-            state: Parámetro opcional para mantener estado entre solicitudes
+            state: Optional parameter to maintain state between requests
             
         Returns:
-            URL completa para el inicio de sesión SSO
+            Full URL for SSO login initiation
         """
         params = {
             'client_id': self.client_id,
@@ -62,13 +62,13 @@ class GlobodainSSOAuth:
     
     def verify_token(self, token):
         """
-        Verifica el token con el servidor SSO
-        
+        Verifies the token with the SSO server
+
         Args:
-            token: Token de acceso a verificar
-            
+            token: Access token to verify
+
         Returns:
-            Datos del token si es válido, None en caso contrario
+            Token data if valid, None otherwise
         """
         try:
             response = requests.post(
@@ -85,13 +85,13 @@ class GlobodainSSOAuth:
     
     def get_user_info(self, token):
         """
-        Obtiene información del usuario con el token
-        
+        Retrieves user information using the token
+
         Args:
-            token: Token de acceso del usuario
-            
+            token: User access token
+
         Returns:
-            Información del perfil del usuario si el token es válido, None en caso contrario
+            User profile information if the token is valid, None otherwise
         """
         try:
             response = requests.get(
@@ -107,13 +107,13 @@ class GlobodainSSOAuth:
     
     def exchange_code_for_token(self, code):
         """
-        Intercambia el código de autorización por un token de acceso
-        
+        Exchanges the authorization code for an access token
+
         Args:
-            code: Código de autorización recibido del servidor SSO
-            
+            code: Authorization code received from the SSO server
+
         Returns:
-            Datos del token de acceso si el intercambio es exitoso, None en caso contrario
+            Access token data if the exchange is successful, None otherwise
         """
         try:
             response = requests.post(
@@ -135,15 +135,15 @@ class GlobodainSSOAuth:
 
     def handle_callback(self, code, session_handler, store_user_func=None):
         """
-        Maneja el callback del SSO procesando el código recibido
-        
+        Handles the SSO callback by processing the received code
+
         Args:
-            code: Código de autorización recibido
-            session_handler: Función que obtiene el objeto de sesión actual
-            store_user_func: Función opcional para almacenar datos de usuario en otro lugar
-            
+            code: Authorization code received
+            session_handler: Function that retrieves the current session object
+            store_user_func: Optional function to store user data elsewhere
+
         Returns:
-            URL de redirección después de procesar el código
+            Redirect URL after processing the code
         """
         # Intercambiar código por token
         token_data = self.exchange_code_for_token(code)

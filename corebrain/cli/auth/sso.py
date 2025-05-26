@@ -218,6 +218,112 @@ def authenticate_with_sso(sso_url: str) -> Tuple[Optional[str], Optional[Dict[st
         - user_data: Authenticated user data
         - api_token: API token obtained from SSO for general authentication
     """
+
+    # Token to store the result
+    result = {"sso_token": None}  # Renamed for clarity
+    auth_completed = threading.Event()
+    session_data = {}
+    
+    # Find an available port
+    #port = get_free_port(DEFAULT_PORT)
+    
+    # SSO client configuration
+    auth_config = {
+        'GLOBODAIN_SSO_URL': sso_url or DEFAULT_SSO_URL,
+        'GLOBODAIN_CLIENT_ID': SSO_CLIENT_ID,
+        'GLOBODAIN_CLIENT_SECRET': SSO_CLIENT_SECRET,
+        'GLOBODAIN_REDIRECT_URI': f"http://localhost:{DEFAULT_PORT}/auth/sso/callback",
+        'GLOBODAIN_SUCCESS_REDIRECT': 'https://sso.globodain.com/cli/success'
+    }
+    
+    sso_auth = GlobodainSSOAuth(config=auth_config)
+    
+    # Factory to create TokenHandler instances with the desired parameters
+    def handler_factory(*args, **kwargs):
+        return TokenHandler(
+            *args,
+            sso_auth=sso_auth,
+            result=result,
+            session_data=session_data,
+            auth_completed=auth_completed,
+            **kwargs
+        )
+    
+    # Start server in the background
+    server = socketserver.TCPServer(("", DEFAULT_PORT), handler_factory)
+    server_thread = threading.Thread(target=server.serve_forever)
+    server_thread.daemon = True
+    server_thread.start()
+    
+    try:
+        # Build complete URL with protocol if missing
+        if sso_url and not sso_url.startswith(("http://", "https://")):
+            sso_url = "https://" + sso_url
+        
+        # URL to start the SSO flow
+        login_url = sso_auth.get_login_url()
+        auth_url = login_url
+        
+        print_colored(f"Opening browser for SSO authentication...", "blue")
+        print_colored(f"If the browser doesn't open automatically, visit:", "blue")
+        print_colored(f"{auth_url}", "bold")
+        
+        # Try to open the browser
+        if not webbrowser.open(auth_url):
+            print_colored("Could not open the browser automatically.", "yellow")
+            print_colored(f"Please copy and paste the following URL into your browser:", "yellow")
+            print_colored(f"{auth_url}", "bold")
+        
+        # Tell the user to wait
+        print_colored("\nWaiting for you to complete authentication in the browser...", "blue")
+        
+        # Wait for authentication to complete (with timeout)
+        timeout_seconds = 60
+        start_time = time.time()
+        
+        # We use a loop with better feedback
+        while not auth_completed.is_set() and (time.time() - start_time < timeout_seconds):
+            elapsed = int(time.time() - start_time)
+            if elapsed % 5 == 0:  # Every 5 seconds we show a message
+                remaining = timeout_seconds - elapsed
+                #print_colored(f"Waiting for authentication... ({remaining}s remaining)", "yellow")
+            
+            # Check every 0.5 seconds for better reactivity
+            auth_completed.wait(0.5)
+        
+        # Verify if authentication was completed
+        if auth_completed.is_set():
+            print_colored("✅ SSO authentication completed successfully!", "green")
+            return result["sso_token"], session_data['user']
+        else:
+            print_colored(f"❌ Could not complete SSO authentication in {timeout_seconds} seconds.", "red")
+            print_colored("You can try again or use a token manually.", "yellow")
+            return None, None, None
+    except Exception as e:
+        print_colored(f"❌ Error during SSO authentication: {str(e)}", "red")
+        return None, None, None
+    finally:
+        # Stop the server
+        try:
+            server.shutdown()
+            server.server_close()
+        except:
+            # If there's any error closing the server, we ignore it
+            pass
+
+def authenticate_with_sso_and_api_key_request(sso_url: str) -> Tuple[Optional[str], Optional[Dict[str, Any]], Optional[str]]:
+    """
+    Initiates an SSO authentication flow through the browser and uses the callback system.
+    
+    Args:
+        sso_url: Base URL of the SSO service
+    
+    Returns:
+        Tuple with (api_key, user_data, api_token) or (None, None, None) if it fails
+        - api_key: Selected API key to use with the SDK
+        - user_data: Authenticated user data
+        - api_token: API token obtained from SSO for general authentication
+    """
     # Import inside the function to avoid circular dependencies
     from corebrain.cli.auth.api_keys import fetch_api_keys, exchange_sso_token_for_api_token
     

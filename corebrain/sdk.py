@@ -1,5 +1,5 @@
 """
-SDK de Corebrain para compatibilidad.
+Corebrain SDK for compatibility.
 """
 from corebrain.config.manager import ConfigManager
 
