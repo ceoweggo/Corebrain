@@ -175,26 +175,16 @@ def extract_db_schema_direct(db_config: Dict[str, Any]) -> Dict[str, Any]:
         return {"type": db_type, "tables": {}, "tables_list": []}
 
 
-from typing import Dict, Any
+import requests
 
-def test_connection(db_config: Dict[str, Any]) -> bool:
+def test_connection(api_key: str, api_url: str) -> bool:
     try:
-        if db_config["type"].lower() == "sql":
-            # Code to test SQL connection...
-            pass
-        elif db_config["type"].lower() in ["nosql", "mongodb"]:
-            import pymongo
-            
-            # Create MongoDB client
-            client = pymongo.MongoClient(db_config["connection_string"])
-            client.admin.command('ping')  # Test connection
-            
-            return True
-        else:
-            _print_colored("Unsupported database type.", "red")
-            return False
+        headers = {"Authorization": f"Bearer {api_key}"}
+        response = requests.get(api_url, headers=headers, timeout=5)
+        response.raise_for_status()  # if status != 200, raises an exception
+        return True
     except Exception as e:
-        _print_colored(f"Failed to connect to the database: {str(e)}", "red")
+        _print_colored(f"Failed to connect to Corebrain API: {str(e)}", "red")
         return False
 
     
