@@ -4,6 +4,7 @@ Configuration manager for the Corebrain SDK.
 
 import json
 import uuid
+import os
 import tomli
 from pathlib import Path
 from typing import Dict, Any, List, Optional
@@ -198,7 +199,7 @@ class ConfigManager:
     
     def list_configs(self, api_key_selected: str) -> List[str]:
         """
-        Lists the available configuration IDs for an API Key.
+        Lists the available configuration.
         
         Args:
             api_key_selected: Selected API Key
@@ -206,7 +207,21 @@ class ConfigManager:
         Returns:
             List of configuration IDs
         """
-        return list(self.configs.get(api_key_selected, {}).keys())
+        if not self.configs:
+            print("You have to use --configurate.")
+            return
+        
+        for api_key, configs in self.configs.items():
+            print(f"\nAPI Key: {api_key}")
+            if not configs:
+                print("There isn't configuration for this API Key.")
+                continue
+            for config_id, config_data in configs.items():
+                print(f"  Config ID: {config_id}")
+                for k, v in config_data.items():
+                    print(f"        {k}: {v}")
+        configs_for_key = self.configs.get(api_key_selected, {})
+        return list(configs_for_key.keys())
     
     def remove_config(self, api_key_selected: str, config_id: str) -> bool:
         """
