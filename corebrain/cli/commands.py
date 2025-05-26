@@ -437,11 +437,7 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
         
         # Handles the CLI command to create a new API key using stored credentials (token from SSO)
         if args.create_api_key:
-        
-            api_token = load_api_token()
-            if not api_token:
-                print_colored("❌ Missing valid API token. Please log in using --login.", "red")
-                return 1
+            sso_token, sso_user = authentication() # Authentica use with SSO
 
             key_name = args.key_name or "default-key"
             key_level = args.key_level or "read"

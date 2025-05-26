@@ -465,4 +465,5 @@ def load_api_token() -> str:
     if os.path.exists(token_path):
         with open(token_path, "r") as f:
             return json.load(f).get("api_token")
+        
     return None
