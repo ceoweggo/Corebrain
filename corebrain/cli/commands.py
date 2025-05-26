@@ -69,6 +69,24 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
         
         args = parser.parse_args(argv)
         
+        def authentication():
+            sso_url = args.sso_url or os.environ.get("COREBRAIN_SSO_URL") or DEFAULT_SSO_URL
+            sso_token, sso_user = authenticate_with_sso(sso_url)
+            if sso_token:
+                try:
+                    print_colored("✅ Returning SSO Token.", "green")
+                    print_colored(f"{sso_user}", "blue")
+                    print_colored("✅ Returning User data.", "green")
+                    print_colored(f"{sso_user}", "blue")
+                    return sso_token, sso_user
+                
+                except Exception as e:
+                    print_colored("❌ Could not return SSO Token or SSO User data.", "red")
+                    return sso_token, sso_user
+                
+            else:
+                print_colored("❌ Could not authenticate with SSO.", "red")
+                return None, None
         
         # Made by Lukasz
         if args.export_config:
@@ -329,8 +347,7 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
             if args.configure:
                 configure_sdk(api_token, api_key, api_url, sso_url, user_data)
             elif args.list_configs:
-                manager = ConfigManager()
-                manager.list_configs(api_key)
+                ConfigManager.list_configs(api_key, api_url)
             elif args.remove_config:
                 ConfigManager.remove_config(api_key, api_url)
             elif args.show_schema:
