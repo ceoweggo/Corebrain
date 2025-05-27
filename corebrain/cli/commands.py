@@ -12,7 +12,7 @@ import string
 from typing import Optional, List
 
 from corebrain.cli.common import DEFAULT_API_URL, DEFAULT_SSO_URL, DEFAULT_PORT, SSO_CLIENT_ID, SSO_CLIENT_SECRET
-from corebrain.cli.auth.sso import authenticate_with_sso, authenticate_with_sso_and_api_key_request, save_api_token, load_api_token
+from corebrain.cli.auth.sso import authenticate_with_sso, authenticate_with_sso_and_api_key_request, load_api_token, save_api_token
 from corebrain.cli.config import configure_sdk, get_api_credential
 from corebrain.cli.utils import print_colored
 from corebrain.config.manager import ConfigManager
@@ -48,6 +48,12 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
                     print_colored(f"{sso_token}", "blue")
                     print_colored("✅ Returning User data.", "green")
                     print_colored(f"{sso_user}", "blue")
+
+                    # Saving api token
+                    api_key, user_data, api_token = get_api_credential(sso_token, DEFAULT_SSO_URL)
+                    save_api_token(api_key)
+                    print_colored("✅ API token saved.", "green")
+
                     return sso_token, sso_user
                 
                 except Exception as e:
@@ -450,6 +456,8 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
             
             if sso_token and sso_user:
                 print_colored("✅ Enter to create an user and API Key.", "green")
+                save_sso_token(sso_token)
+                print_colored("✅ SSO token saved.", "green")
                 
                 # Get API URL from environment or use default
                 api_url = os.environ.get("COREBRAIN_API_URL", DEFAULT_API_URL)
@@ -1068,12 +1076,12 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
 
         # Handles the CLI command to create a new API key using stored credentials (token from SSO)
         if args.create_api_key:
-            sso_token, sso_user = authentication() # Authentica use with SSO
+            sso_token = load_api_token()
 
             key_name = args.key_name or "default-key"
             key_level = args.key_level or "read"
 
-            api_url = args.api_url or os.environ.get("COREBRAIN_API_URL") or DEFAULT_API_URL
+            api_url = os.environ.get("COREBRAIN_API_URL") or DEFAULT_API_URL
 
             # Sending request to Corebrain-API
             payload = {
@@ -1082,7 +1090,7 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
             }
 
             headers = {
-                "Authorization": f"Bearer {api_token}",
+                "Authorization": f"Bearer {sso_token}",
                 "Content-Type": "application/json"
             }
 

@@ -2,7 +2,7 @@
 Default values for SSO and API connection
 """
 
-DEFAULT_API_URL = "http://localhost:1000" # Use 5000 in Windows / 1000 in MacOS by default
+DEFAULT_API_URL = "http://localhost:5000" # Use 5000 in Windows / 1000 in MacOS by default
 #DEFAULT_SSO_URL = "http://localhost:3000" # localhost
 DEFAULT_SSO_URL = "https://sso.globodain.com" # remote
 DEFAULT_PORT = 8765
