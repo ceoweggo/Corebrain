@@ -220,10 +220,10 @@ class ConfigManager:
 
         if found:
             self._save_configs()
-            _print_colored(f"✅ Activated configuration {config_id_to_activate}", "green")
+            _print_colored(f"Activated configuration {config_id_to_activate}", "green")
             return True
         else:
-            _print_colored(f"❌ Invalid Config ID: {config_id_to_activate}", "red")
+            _print_colored(f"Invalid Config ID: {config_id_to_activate}", "red")
             return False
 
     def get_active_config_id(self, api_key: str) -> Optional[str]:
@@ -239,7 +239,7 @@ class ConfigManager:
                     if data.get("api_key") == api_key:
                         return data.get("config_id")
         except Exception as e:
-            _print_colored(f"⚠️ Could not load active configuration: {e}", "yellow")
+            _print_colored(f"Could not load active configuration: {e}", "yellow")
         return None
     
     def list_configs(self, api_key_selected: str) -> List[str]:
