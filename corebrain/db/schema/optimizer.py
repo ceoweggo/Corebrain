@@ -24,13 +24,13 @@ class SchemaOptimizer:
         self.max_columns_per_table = max_columns_per_table
         self.max_samples = max_samples
         
-        # Tablas importantes que siempre deben incluirse si existen
+        # Tables that are always important
         self.priority_tables = set([
             "users", "customers", "products", "orders", "transactions",
             "invoices", "accounts", "clients", "employees", "services"
         ])
         
-        # Tablas típicamente menos importantes
+        # Tables that are typically less important
         self.low_priority_tables = set([
             "logs", "sessions", "tokens", "temp", "cache", "metrics",
             "statistics", "audit", "history", "archives", "settings"
@@ -47,7 +47,7 @@ class SchemaOptimizer:
         Returns:
             Optimized schema
         """
-        # Crear copia para no modificar el original
+        # Create a copy to not modify the original
         optimized_schema = {
             "type": db_schema.get("type", ""),
             "database": db_schema.get("database", ""),
@@ -56,68 +56,68 @@ class SchemaOptimizer:
             "tables_list": []
         }
         
-        # Determinar tablas relevantes para la consulta
+        # Determine relevant tables for the query
         query_relevant_tables = set()
         if query:
-            # Extraer potenciales nombres de tablas de la consulta
+            # Extract potential table names from the query
             normalized_query = query.lower()
             
-            # Obtener nombres de todas las tablas
+            # Get all table names
             all_table_names = [
                 name.lower() for name in db_schema.get("tables", {}).keys()
             ]
             
-            # Buscar menciones a tablas en la consulta
+            # Search for table mentions in the query
             for table_name in all_table_names:
-                # Buscar el nombre exacto (como palabra completa)
+                # Search for the exact name (as a whole word)
                 if re.search(r'\b' + re.escape(table_name) + r'\b', normalized_query):
                     query_relevant_tables.add(table_name)
                 
-                # También buscar formas singulares/plurales simples
+                # Also search for singular/plural simple forms
                 if table_name.endswith('s') and re.search(r'\b' + re.escape(table_name[:-1]) + r'\b', normalized_query):
                     query_relevant_tables.add(table_name)
                 elif not table_name.endswith('s') and re.search(r'\b' + re.escape(table_name + 's') + r'\b', normalized_query):
                     query_relevant_tables.add(table_name)
         
-        # Priorizar tablas a incluir
+        # Prioritize tables to include
         table_scores = {}
         for table_name in db_schema.get("tables", {}):
             score = 0
             
-            # Tablas mencionadas en la consulta tienen máxima prioridad
+            # Tables mentioned in the query have maximum priority
             if table_name.lower() in query_relevant_tables:
                 score += 100
             
-            # Tablas importantes
+            # Important tables
             if table_name.lower() in self.priority_tables:
                 score += 50
             
-            # Tablas poco importantes
+            # Less important tables
             if table_name.lower() in self.low_priority_tables:
                 score -= 30
             
-            # Tablas con más columnas pueden ser más relevantes
+            # Tables with more columns may be more relevant
             table_info = db_schema["tables"].get(table_name, {})
             column_count = len(table_info.get("columns", []))
-            score += min(column_count, 20)  # Limitar a 20 puntos máximo
+            score += min(column_count, 20)  # Limit to 20 points maximum
             
-            # Guardar puntuación
+            # Save score
             table_scores[table_name] = score
         
-        # Ordenar tablas por puntuación
+        # Sort tables by score
         sorted_tables = sorted(table_scores.items(), key=lambda x: x[1], reverse=True)
         
-        # Limitar número de tablas
+        # Limit number of tables
         selected_tables = [name for name, _ in sorted_tables[:self.max_tables]]
         
-        # Copiar tablas seleccionadas con optimizaciones
+        # Copy selected tables with optimizations
         for table_name in selected_tables:
             table_info = db_schema["tables"].get(table_name, {})
             
-            # Optimizar columnas
+            # Optimize columns
             columns = table_info.get("columns", [])
             if len(columns) > self.max_columns_per_table:
-                # Mantener las columnas más importantes (id, nombre, clave primaria, etc)
+                # Keep most important columns (id, name, primary key, etc)
                 important_columns = []
                 other_columns = []
                 
@@ -128,7 +128,7 @@ class SchemaOptimizer:
                     else:
                         other_columns.append(col)
                 
-                # Tomar las columnas importantes y completar con otras hasta el límite
+                # Take the most important columns and complete with others up to the limit
                 optimized_columns = important_columns
                 remaining_slots = self.max_columns_per_table - len(optimized_columns)
                 if remaining_slots > 0:
@@ -136,17 +136,17 @@ class SchemaOptimizer:
             else:
                 optimized_columns = columns
             
-            # Optimizar datos de muestra
+            # Optimize sample data
             sample_data = table_info.get("sample_data", [])
             optimized_samples = sample_data[:self.max_samples] if sample_data else []
             
-            # Guardar tabla optimizada
+            # Save optimized table
             optimized_schema["tables"][table_name] = {
                 "columns": optimized_columns,
                 "sample_data": optimized_samples
             }
             
-            # Añadir a la lista de tablas
+            # Add to the list of tables
             optimized_schema["tables_list"].append({
                 "name": table_name,
                 "columns": optimized_columns,

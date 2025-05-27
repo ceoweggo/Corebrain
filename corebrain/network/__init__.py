@@ -12,7 +12,7 @@ from corebrain.network.client import (
     APIAuthError
 )
 
-# Exportación explícita de componentes públicos
+# Explicit export of public components
 __all__ = [
     'APIClient',
     'APIError',

@@ -27,9 +27,6 @@ __all__ = [
     '__version__'
 ]
 
-# Variable de versión
-__version__ = "1.0.0"
-
 def init(api_key: str, config_id: str, skip_verification: bool = False) -> Corebrain:
     """
     Initialize the Corebrain SDK with the provided API key and configuration.

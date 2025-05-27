@@ -10,16 +10,16 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional, Any, Union
 
-# Niveles de logging personalizados
+# Custom logging levels
 VERBOSE = 15  # Entre DEBUG e INFO
 
-# Configuración predeterminada
+# Default settings
 DEFAULT_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 DEFAULT_DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 DEFAULT_LEVEL = logging.INFO
 DEFAULT_LOG_DIR = Path.home() / ".corebrain" / "logs"
 
-# Colores para logging en terminal
+# Colors for logging in terminal
 LOG_COLORS = {
     "DEBUG": "\033[94m",     # Azul
     "VERBOSE": "\033[96m",   # Cian
@@ -97,46 +97,46 @@ def setup_logger(name: str = "corebrain",
     Returns:
         Configured logger
     """
-    # Registrar nivel personalizado VERBOSE
+    # Register custom level VERBOSE.
     if not hasattr(logging, 'VERBOSE'):
         logging.addLevelName(VERBOSE, 'VERBOSE')
     
-    # Registrar clase de logger personalizada
+    # Register custom logger class.
     logging.setLoggerClass(VerboseLogger)
     
-    # Obtener o crear logger
+    # Get or create logger.
     logger = logging.getLogger(name)
     
-    # Limpiar handlers existentes
+    # Clear existing handlers.
     for handler in logger.handlers[:]:
         logger.removeHandler(handler)
     
-    # Configurar nivel de logging
+    # Configure logging level.
     logger.setLevel(level)
     logger.propagate = propagate
     
-    # Formato predeterminado
+    # Default format.
     fmt = format_string or DEFAULT_FORMAT
     formatter = ColoredFormatter(fmt, use_colors=use_colors)
     
-    # Handler de consola
+    # Console handler
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(formatter)
     logger.addHandler(console_handler)
     
-    # Handler de archivo si se proporciona ruta
+    # File handler if path is provided
     if file_path:
-        # Asegurar que el directorio exista
+        # Ensure that the directory exists
         file_path = Path(file_path)
         file_path.parent.mkdir(parents=True, exist_ok=True)
         
         file_handler = logging.FileHandler(file_path)
-        # Para archivos, usar formateador sin colores
+        # For files, use colorless formatter
         file_formatter = logging.Formatter(fmt)
         file_handler.setFormatter(file_formatter)
         logger.addHandler(file_handler)
     
-    # Mensajes de diagnóstico
+    # Diagnostic messages
     logger.debug(f"Logger '{name}' configurado con nivel {logging.getLevelName(level)}")
     if file_path:
         logger.debug(f"Logs escritos a {file_path}")
@@ -156,19 +156,19 @@ def get_logger(name: str, level: Optional[int] = None) -> logging.Logger:
     """
     logger = logging.getLogger(name)
     
-    # Si el logger no tiene handlers, configurarlo
+    # If the logger does not have handlers, configure it
     if not logger.handlers:
-        # Determinar si es un logger secundario
+        # Determine if it is a secondary logger
         if '.' in name:
-            # Es un sublogger, configurar para propagar a logger padre
+            # It is a sublogger, configure to propagate to parent logger
             logger.propagate = True
             if level is not None:
                 logger.setLevel(level)
         else:
-            # Es un logger principal, configurar completamente
+            # It is a main logger, fully configure
             logger = setup_logger(name, level or DEFAULT_LEVEL)
     elif level is not None:
-        # Solo actualizar el nivel si se especifica
+        # Only update level if specified
         logger.setLevel(level)
     
     return logger
@@ -189,23 +189,23 @@ def enable_file_logging(logger_name: str = "corebrain",
     """
     logger = logging.getLogger(logger_name)
     
-    # Determinar la ruta del archivo de log
+    # Determine the path of the log file
     log_dir = Path(log_dir) if log_dir else DEFAULT_LOG_DIR
     log_dir.mkdir(parents=True, exist_ok=True)
     
-    # Generar nombre de archivo si no se proporciona
+    # Generate filename if not provided
     if not filename:
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         filename = f"{logger_name}_{timestamp}.log"
     
     file_path = log_dir / filename
     
-    # Verificar si ya hay un FileHandler
+    # Check if a FileHandler already exists
     for handler in logger.handlers:
         if isinstance(handler, logging.FileHandler):
             logger.removeHandler(handler)
     
-    # Agregar nuevo FileHandler
+    # Add new FileHandler
     file_handler = logging.FileHandler(file_path)
     formatter = logging.Formatter(DEFAULT_FORMAT)
     file_handler.setFormatter(formatter)
@@ -223,21 +223,21 @@ def set_log_level(level: Union[int, str],
         level: Logging level (name or integer value)
         logger_name: Specific logger name (if None, affects all)
     """
-    # Convertir nombre de nivel a valor si es necesario
+    # Convert level name to value if necessary
     if isinstance(level, str):
         level = getattr(logging, level.upper(), logging.INFO)
     
     if logger_name:
-        # Afectar solo al logger especificado
+        # Affect only the specified logger
         logger = logging.getLogger(logger_name)
         logger.setLevel(level)
         logger.info(f"Nivel de log cambiado a {logging.getLevelName(level)}")
     else:
-        # Afectar al logger raíz y a todos los loggers existentes
+        # Affect the root logger and all existing loggers
         root = logging.getLogger()
         root.setLevel(level)
         
-        # También afectar a loggers específicos del SDK
+        # Also affect SDK-specific loggers
         for name in logging.root.manager.loggerDict:
             if name.startswith("corebrain"):
                 logging.getLogger(name).setLevel(level)

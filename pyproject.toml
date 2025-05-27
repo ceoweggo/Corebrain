@@ -1,7 +1,7 @@
 [project]
 name = "corebrain"
-version = "0.1.0"
-description = "SDK de Corebrain para consultas en lenguaje natural a bases de datos"
+version = "0.2.0"
+description = "Corebrain SDK for querys to DB in natural language"
 readme = "README.md"
 authors = [
     {name = "Rubén Ayuso", email = "ruben@globodain.com"}
@@ -27,14 +27,14 @@ dependencies = [
     "typing-extensions>=4.4.0",
     "requests>=2.28.0",
     "asyncio>=3.4.3",
-    "psycopg2-binary>=2.9.0",  # En lugar de psycopg2 para evitar problemas de compilación
+    "psycopg2-binary>=2.9.0",  # Instead of psycopg2 to avoid compilation errors
     "mysql-connector-python>=8.0.23",
     "pymongo>=4.4.0",
 ]
 
 [project.optional-dependencies]
 postgres = ["psycopg2-binary>=2.9.0"]
-mongodb = ["pymongo>=4.4.0"]
+ = ["pymongo>=4.4.0"]
 mysql = ["mysql-connector-python>=8.0.23"]
 all_db = [
     "psycopg2-binary>=2.9.0",
@@ -50,6 +50,8 @@ dev = [
     "flake8>=6.0.0",
     "sphinx>=8.2.3",
     "furo>=2024.8.6",
+    "sphinx-copybutton>=0.5.2",
+    "sphinx-design>=0.6.1,<0.7.0",
 ]
 
 

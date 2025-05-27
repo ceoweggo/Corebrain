@@ -4,6 +4,7 @@ Configuration manager for the Corebrain SDK.
 
 import json
 import uuid
+import os
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 from cryptography.fernet import Fernet
@@ -40,20 +41,6 @@ def export_config(filepath="config.json"):
     with open(filepath, "w") as f:
         json.dump(config, f, indent=4)
     print(f"Configuration exported to {filepath}")
-
-# Validates that a configuration with the given ID exists.
-def validate_config(config_id: str):
-    # The API key under which configs are stored
-    api_key = os.environ.get("COREBRAIN_API_KEY", "")
-    manager = ConfigManager()
-    cfg = manager.get_config(api_key, config_id)
-
-    if cfg:
-        print(f"✅ Configuration '{config_id}' is present and valid.")
-        return 0
-    else:
-        print(f"❌ Configuration '{config_id}' not found.")
-        return 1
     
 # Función para imprimir mensajes coloreados
 def _print_colored(message: str, color: str) -> None:
@@ -86,11 +73,11 @@ class ConfigManager:
         """Ensures that the configuration directory exists."""
         try:
             self.CONFIG_DIR.mkdir(parents=True, exist_ok=True)
-            logger.debug(f"Directorio de configuración asegurado: {self.CONFIG_DIR}")
-            _print_colored(f"Directorio de configuración asegurado: {self.CONFIG_DIR}", "blue")
+            logger.debug(f"Configuration directory ensured: {self.CONFIG_DIR}")
+            _print_colored(f"Configuration directory ensured: {self.CONFIG_DIR}", "blue")
         except Exception as e:
-            logger.error(f"Error al crear directorio de configuración: {str(e)}")
-            _print_colored(f"Error al crear directorio de configuración: {str(e)}", "red")
+            logger.error(f"Error creating configuration directory: {str(e)}")
+            _print_colored(f"Error creating configuration directory: {str(e)}", "red")
     
     def _load_secret_key(self) -> None:
         """Loads or generates the secret key to encrypt sensitive data."""
@@ -99,14 +86,14 @@ class ConfigManager:
                 key = Fernet.generate_key()
                 with open(self.SECRET_KEY_FILE, 'wb') as key_file:
                     key_file.write(key)
-                _print_colored(f"Nueva clave secreta generada en: {self.SECRET_KEY_FILE}", "green")
+                _print_colored(f"New secret key generated in: {self.SECRET_KEY_FILE}", "green")
             
             with open(self.SECRET_KEY_FILE, 'rb') as key_file:
                 self.secret_key = key_file.read()
             
             self.cipher = Fernet(self.secret_key)
         except Exception as e:
-            _print_colored(f"Error al cargar/generar clave secreta: {str(e)}", "red")
+            _print_colored(f"Error loading/generating secret key: {str(e)}", "red")
             # Fallback a una clave temporal (menos segura pero funcional)
             self.secret_key = Fernet.generate_key()
             self.cipher = Fernet(self.secret_key)
@@ -114,7 +101,7 @@ class ConfigManager:
     def _load_configs(self) -> Dict[str, Dict[str, Any]]:
         """Loads the saved configurations."""
         if not self.CONFIG_FILE.exists():
-            _print_colored(f"Archivo de configuración no encontrado: {self.CONFIG_FILE}", "yellow")
+            _print_colored(f"Configuration file not found: {self.CONFIG_FILE}", "yellow")
             return {}
         
         try:
@@ -122,7 +109,7 @@ class ConfigManager:
                 encrypted_data = f.read()
             
             if not encrypted_data:
-                _print_colored("Archivo de configuración vacío", "yellow")
+                _print_colored("Configuration file is empty", "yellow")
                 return {}
             
             try:
@@ -131,17 +118,17 @@ class ConfigManager:
                 configs = json.loads(decrypted_data)
             except Exception as e:
                 # Si falla el descifrado, intentar cargar como JSON plano
-                logger.warning(f"Error al descifrar configuración: {e}")
+                logger.warning(f"Error decrypting configuration: {e}")
                 configs = json.loads(encrypted_data)
             
             if isinstance(configs, str):
                 configs = json.loads(configs)
             
-            _print_colored(f"Configuración cargada", "green")
+            _print_colored(f"Configuration loaded", "green")
             self.configs = configs
             return configs
         except Exception as e:
-            _print_colored(f"Error al cargar configuraciones: {str(e)}", "red")
+            _print_colored(f"Error loading configurations: {str(e)}", "red")
             return {}
     
     def _save_configs(self) -> None:
@@ -153,9 +140,9 @@ class ConfigManager:
             with open(self.CONFIG_FILE, 'w') as f:
                 f.write(encrypted_data)
                 
-            _print_colored(f"Configuraciones guardadas en: {self.CONFIG_FILE}", "green")
+            _print_colored(f"Configurations saved in: {self.CONFIG_FILE}", "green")
         except Exception as e:
-            _print_colored(f"Error al guardar configuraciones: {str(e)}", "red")
+            _print_colored(f"Error saving configurations: {str(e)}", "red")
     
     def add_config(self, api_key: str, db_config: Dict[str, Any], config_id: Optional[str] = None) -> str:
         """
@@ -173,15 +160,15 @@ class ConfigManager:
             config_id = str(uuid.uuid4())
             db_config["config_id"] = config_id
         
-        # Crear o actualizar la entrada para este token
+        # Create or update the entry for this token
         if api_key not in self.configs:
             self.configs[api_key] = {}
         
-        # Añadir la configuración
+        # Add the configuration
         self.configs[api_key][config_id] = db_config
         self._save_configs()
         
-        _print_colored(f"Configuración agregada: {config_id} para la API Key: {api_key[:8]}...", "green")
+        _print_colored(f"Configuration added: {config_id} for API Key: {api_key[:8]}...", "green")
         return config_id
     
     def get_config(self, api_key_selected: str, config_id: str) -> Optional[Dict[str, Any]]:
@@ -223,13 +210,13 @@ class ConfigManager:
         if api_key_selected in self.configs and config_id in self.configs[api_key_selected]:
             del self.configs[api_key_selected][config_id]
             
-            # Si no quedan configuraciones para este token, eliminar la entrada
+            # If there are no configurations for this token, delete the entry
             if not self.configs[api_key_selected]:
                 del self.configs[api_key_selected]
             
             self._save_configs()
-            _print_colored(f"Configuración {config_id} eliminada para API Key: {api_key_selected[:8]}...", "green")
+            _print_colored(f"Configuration {config_id} removed for API Key: {api_key_selected[:8]}...", "green")
             return True
         
-        _print_colored(f"Configuración {config_id} no encontrada para API Key: {api_key_selected[:8]}...", "yellow")
+        _print_colored(f"Configuration {config_id} not found for API Key: {api_key_selected[:8]}...", "yellow")
         return False

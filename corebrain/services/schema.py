@@ -1,6 +1,4 @@
 
-# Nuevo directorio: services/
-# Nuevo archivo: services/schema_service.py
 """
 Services for managing database schemas.
 """
@@ -27,5 +25,3 @@ class SchemaService:
     def optimize_schema(self, schema: Dict[str, Any], query: str = None) -> Dict[str, Any]:
         """Optimizes an existing schema."""
         return self.schema_optimizer.optimize_schema(schema, query)
-    
-    # Otros métodos de servicio...

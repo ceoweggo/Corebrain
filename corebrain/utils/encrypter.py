@@ -27,16 +27,16 @@ def derive_key_from_password(password: Union[str, bytes], salt: Optional[bytes] 
     if isinstance(password, str):
         password = password.encode()
     
-    # Generar sal si no se proporciona
+    # Generate salt if not provided
     if salt is None:
         salt = os.urandom(16)
     
-    # Derivar clave usando PBKDF2
+    # Derive key using PBKDF2
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA256(),
         length=32,
         salt=salt,
-        iterations=100000  # Mayor número de iteraciones = mayor seguridad
+        iterations=100000  # Higher number of iterations = higher security
     )
     
     key = kdf.derive(password)
@@ -89,7 +89,7 @@ class ConfigEncrypter:
         """Initializes the encryption object, creating or loading the key as needed."""
         key = None
         
-        # Si hay ruta de clave, intentar cargar o crear
+        # If there is a key path, try to load or create
         if self.key_path:
             try:
                 if self.key_path.exists():
@@ -97,17 +97,17 @@ class ConfigEncrypter:
                         key = f.read().strip()
                         logger.debug(f"Clave cargada desde {self.key_path}")
                 else:
-                    # Crear directorio padre si no existe
+                    # Create parent directory if it doesn't exist
                     self.key_path.parent.mkdir(parents=True, exist_ok=True)
                     
-                    # Generar nueva clave
+                    # Generate new key
                     key = Fernet.generate_key()
                     
-                    # Guardar clave
+                    # Save key
                     with open(self.key_path, 'wb') as f:
                         f.write(key)
                     
-                    # Asegurar permisos restrictivos (solo el propietario puede leer)
+                    # Ensure restrictive permissions (only the owner can read)
                     try:
                         os.chmod(self.key_path, 0o600)
                     except Exception as e:
@@ -116,13 +116,13 @@ class ConfigEncrypter:
                     logger.debug(f"Nueva clave generada y guardada en {self.key_path}")
             except Exception as e:
                 logger.error(f"Error al gestionar clave en {self.key_path}: {e}")
-                # En caso de error, generar clave efímera
+                # If there is an error, generate a temporary key
                 key = None
         
-        # Si no tenemos clave, generar una efímera
+        # If we don't have a key, generate a temporary key
         if not key:
             key = Fernet.generate_key()
-            logger.debug("Usando clave efímera generada")
+            logger.debug("Using generated temporary key")
         
         self.cipher = Fernet(key)
     
@@ -142,7 +142,7 @@ class ConfigEncrypter:
         try:
             return self.cipher.encrypt(data)
         except Exception as e:
-            logger.error(f"Error al cifrar datos: {e}")
+            logger.error(f"Error encrypting data: {e}")
             raise
     
     def decrypt(self, encrypted_data: Union[str, bytes]) -> bytes:
@@ -213,7 +213,7 @@ class ConfigEncrypter:
         input_path = Path(input_path)
         
         if not output_path:
-            # Si termina en .enc, quitar esa extensión
+            # If it ends in .enc, remove that extension
             if input_path.suffix == '.enc':
                 output_path = input_path.with_suffix('')
             else:
@@ -245,17 +245,17 @@ class ConfigEncrypter:
         """
         key_path = Path(key_path)
         
-        # Crear directorio padre si no existe
+        # Create parent directory if it does not exist
         key_path.parent.mkdir(parents=True, exist_ok=True)
         
-        # Generar clave
+        # Generate key
         key = Fernet.generate_key()
         
-        # Guardar clave
+        # Save key
         with open(key_path, 'wb') as f:
             f.write(key)
         
-        # Establecer permisos restrictivos
+        # Set restrictive permissions
         try:
             os.chmod(key_path, 0o600)
         except Exception as e:

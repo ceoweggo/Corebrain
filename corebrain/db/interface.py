@@ -28,9 +28,3 @@ class DatabaseConnector(ABC):
     def close(self, connection: Any) -> None:
         """Closes the connection."""
         pass
-
-# Posteriormente se podrían implementar conectores específicos:
-# - SQLiteConnector
-# - MySQLConnector
-# - PostgresConnector
-# - MongoDBConnector

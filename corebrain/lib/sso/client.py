@@ -32,7 +32,7 @@ class GlobodainSSOClient:
         self.client_secret = client_secret
         self.service_id = service_id
         self.redirect_uri = redirect_uri
-        self._token_cache = {}  # Cache de tokens verificados
+        self._token_cache = {}  # Cache of verified tokens
         
 
     def get_login_url(self, provider: str = None) -> str:
@@ -63,17 +63,17 @@ class GlobodainSSOClient:
         Raises:
             Exception: If the token is not valid
         """
-        # Verificar si ya tenemos información cacheada y válida del token
+        # Check if we have cached and valid token information
         now = datetime.now()
         if token in self._token_cache:
             cache_data = self._token_cache[token]
             if cache_data['expires_at'] > now:
                 return cache_data['user_info']
             else:
-                # Eliminar token expirado del caché
+                # Remove expired token from cache
                 del self._token_cache[token]
         
-        # Verificar token con el servicio SSO
+        # Verify token with the SSO service
         headers = {
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json"
@@ -88,7 +88,7 @@ class GlobodainSSOClient:
         if response.status_code != 200:
             raise Exception(f"Token inválido: {response.text}")
         
-        # Obtener información del usuario
+        # Get user information
         user_response = requests.get(
             f"{self.sso_url}/api/users/me",
             headers=headers
@@ -99,7 +99,7 @@ class GlobodainSSOClient:
         
         user_info = user_response.json()
         
-        # Guardar en caché (15 minutos)
+        # Save in cache (15 minutes)
         self._token_cache[token] = {
             'user_info': user_info,
             'expires_at': now + timedelta(minutes=15)
@@ -187,7 +187,7 @@ class GlobodainSSOClient:
         if response.status_code != 200:
             raise Exception(f"Error al cerrar sesión: {response.text}")
         
-        # Limpiar cualquier token cacheado
+        # Clear any cached tokens
         if access_token in self._token_cache:
             del self._token_cache[access_token]
         

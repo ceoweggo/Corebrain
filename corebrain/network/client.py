@@ -40,7 +40,7 @@ class APIAuthError(APIError):
 class APIClient:
     """Optimized HTTP client for communication with the Corebrain API."""
     
-    # Constantes para manejo de reintentos y errores
+    # Constants for retry handling and errors
     MAX_RETRIES = 3
     RETRY_DELAY = 0.5  # segundos
     RETRY_STATUS_CODES = [408, 429, 500, 502, 503, 504]
@@ -56,32 +56,32 @@ class APIClient:
             verify_ssl: Whether to verify the SSL certificate
             user_agent: Custom user agent
         """
-        # Normalizar URL base para asegurar que termina con '/'
+        # Normalize base URL to ensure it ends with '/'
         self.base_url = base_url if base_url.endswith('/') else base_url + '/'
         self.default_timeout = default_timeout
         self.verify_ssl = verify_ssl
         
-        # Headers predeterminados
+        # Default headers
         self.default_headers = {
             'User-Agent': user_agent or 'CorebrainSDK/1.0',
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         }
         
-        # Crear sesión HTTP con límites y timeouts optimizados
+        # Create HTTP session with optimized limits and timeouts
         self.session = httpx.Client(
             timeout=httpx.Timeout(timeout=default_timeout),
             verify=verify_ssl,
-            http2=True,  # Usar HTTP/2 si está disponible
+            http2=True,  # Use HTTP/2 if available
             limits=httpx.Limits(max_connections=100, max_keepalive_connections=20)
         )
         
-        # Estadísticas y métricas
+        # Statistics and metrics
         self.request_count = 0
         self.error_count = 0
         self.total_request_time = 0
         
-        logger.debug(f"Cliente API inicializado con base_url={base_url}, timeout={default_timeout}s")
+        logger.debug(f"API Client initialized with base_url={base_url}, timeout={default_timeout}s")
     
     def __del__(self):
         """Ensure the session is closed when the client is deleted."""
@@ -92,9 +92,9 @@ class APIClient:
         if hasattr(self, 'session') and self.session:
             try:
                 self.session.close()
-                logger.debug("Sesión HTTP cerrada correctamente")
+                logger.debug("HTTP session closed correctly")
             except Exception as e:
-                logger.warning(f"Error al cerrar sesión HTTP: {e}")
+                logger.warning(f"Error closing HTTP session: {e}")
     
     def get_full_url(self, endpoint: str) -> str:
         """
@@ -106,7 +106,7 @@ class APIClient:
         Returns:
             Full URL
         """
-        # Eliminar '/' inicial si existe para evitar rutas duplicadas
+        # Remove '/' if it exists at the beginning to avoid duplicate paths
         endpoint = endpoint.lstrip('/')
         return urljoin(self.base_url, endpoint)
     
@@ -122,14 +122,14 @@ class APIClient:
         Returns:
             Combined headers
         """
-        # Comenzar con headers predeterminados
+        # Start with default headers
         final_headers = self.default_headers.copy()
         
-        # Añadir headers personalizados
+        # Add custom headers
         if headers:
             final_headers.update(headers)
         
-        # Añadir token de autenticación si se proporciona
+        # Add authentication token if provided
         if auth_token:
             final_headers['Authorization'] = f'Bearer {auth_token}'
         
@@ -150,11 +150,11 @@ class APIClient:
         """
         status_code = response.status_code
         
-        # Procesar errores según código de estado
+        # Process errors according to status code
         if 400 <= status_code < 500:
             error_detail = None
             
-            # Intentar extraer detalles del error del cuerpo JSON
+            # Try to extract error details from JSON body
             try:
                 json_data = response.json()
                 if isinstance(json_data, dict):
@@ -164,37 +164,37 @@ class APIClient:
                         json_data.get('error')
                     )
             except Exception:
-                # Si no podemos parsear JSON, usar el texto completo
+                # If we can't parse JSON, use the full text
                 error_detail = response.text[:200] + ('...' if len(response.text) > 200 else '')
             
-            # Errores específicos según código
+            # Specific errors according to code
             if status_code == 401:
-                msg = "Error de autenticación: token inválido o expirado"
+                msg = "Authentication error: invalid or expired token"
                 logger.error(f"{msg} - {error_detail or ''}")
                 raise APIAuthError(msg, status_code, error_detail, response)
             
             elif status_code == 403:
-                msg = "Acceso prohibido: no tienes permisos suficientes"
+                msg = "Access denied: you don't have enough permissions"
                 logger.error(f"{msg} - {error_detail or ''}")
                 raise APIAuthError(msg, status_code, error_detail, response)
             
             elif status_code == 404:
-                msg = f"Recurso no encontrado: {response.url}"
+                msg = f"Resource not found: {response.url}"
                 logger.error(msg)
                 raise APIError(msg, status_code, error_detail, response)
             
             elif status_code == 429:
-                msg = "Demasiadas peticiones: límite de tasa excedido"
+                msg = "Too many requests: rate limit exceeded"
                 logger.warning(msg)
                 raise APIError(msg, status_code, error_detail, response)
             
             else:
-                msg = f"Error del cliente ({status_code}): {error_detail or 'sin detalles'}"
+                msg = f"Client error ({status_code}): {error_detail or 'no details'}"
                 logger.error(msg)
                 raise APIError(msg, status_code, error_detail, response)
         
         elif 500 <= status_code < 600:
-            msg = f"Error del servidor ({status_code}): el servidor API encontró un error"
+            msg = f"Server error ({status_code}): the API server found an error"
             logger.error(msg)
             raise APIError(msg, status_code, response.text[:200], response)
         
@@ -233,27 +233,27 @@ class APIClient:
         url = self.get_full_url(endpoint)
         final_headers = self.prepare_headers(headers, auth_token)
         
-        # Configurar timeout
+        # Set timeout
         request_timeout = timeout or self.default_timeout
         
-        # Contador para reintentos
+        # Retry counter
         retries = 0
         last_error = None
         
-        # Registrar inicio de la petición
+        # Register start of request
         start_time = time.time()
         self.request_count += 1
         
         while retries <= (self.MAX_RETRIES if retry else 0):
             try:
                 if retries > 0:
-                    # Esperar antes de reintentar con backoff exponencial
+                    # Wait before retrying with exponential backoff
                     wait_time = self.RETRY_DELAY * (2 ** (retries - 1))
-                    logger.info(f"Reintentando petición ({retries}/{self.MAX_RETRIES}) a {url} después de {wait_time:.2f}s")
+                    logger.info(f"Retrying request ({retries}/{self.MAX_RETRIES}) to {url} after {wait_time:.2f}s")
                     time.sleep(wait_time)
                 
-                # Realizar la petición
-                logger.debug(f"Enviando petición {method} a {url}")
+                # Make the request
+                logger.debug(f"Sending {method} request to {url}")
                 response = self.session.request(
                     method=method,
                     url=url,
@@ -264,16 +264,16 @@ class APIClient:
                     timeout=request_timeout
                 )
                 
-                # Verificar si debemos reintentar por código de estado
+                # Check if we should retry by status code
                 if response.status_code in self.RETRY_STATUS_CODES and retry and retries < self.MAX_RETRIES:
-                    logger.warning(f"Código de estado {response.status_code} recibido, reintentando")
+                    logger.warning(f"Status code {response.status_code} received, retrying")
                     retries += 1
                     continue
                 
-                # Procesar la respuesta
+                # Process the response
                 processed_response = self.handle_response(response)
                 
-                # Registrar tiempo total
+                # Register total time
                 elapsed = time.time() - start_time
                 self.total_request_time += elapsed
                 logger.debug(f"Petición completada en {elapsed:.3f}s con estado {response.status_code}")
@@ -283,39 +283,39 @@ class APIClient:
             except (ConnectError, httpx.HTTPError) as e:
                 last_error = e
                 
-                # Decidir si reintentamos dependiendo del tipo de error
+                # Decide if we should retry depending on the error type
                 if isinstance(e, (ReadTimeout, WriteTimeout, PoolTimeout, ConnectError)) and retry and retries < self.MAX_RETRIES:
-                    logger.warning(f"Error de conexión: {str(e)}, reintentando {retries+1}/{self.MAX_RETRIES}")
+                    logger.warning(f"Connection error: {str(e)}, retrying {retries+1}/{self.MAX_RETRIES}")
                     retries += 1
                     continue
                 
-                # No más reintentos o error no recuperable
+                # No more retries or unrecoverable errors
                 self.error_count += 1
                 elapsed = time.time() - start_time
                 
                 if isinstance(e, (ReadTimeout, WriteTimeout, PoolTimeout)):
-                    logger.error(f"Timeout en petición a {url} después de {elapsed:.3f}s: {str(e)}")
-                    raise APITimeoutError(f"La petición a {endpoint} excedió el tiempo máximo de {request_timeout}s", 
+                    logger.error(f"Timeout in request to {url} after {elapsed:.3f}s: {str(e)}")
+                    raise APITimeoutError(f"Request to {endpoint} exceeded the maximum time of {request_timeout}s", 
                                         response=getattr(e, 'response', None))
                 else:
-                    logger.error(f"Error de conexión a {url} después de {elapsed:.3f}s: {str(e)}")
-                    raise APIConnectionError(f"Error de conexión a {endpoint}: {str(e)}",
+                    logger.error(f"Connection error to {url} after {elapsed:.3f}s: {str(e)}")
+                    raise APIConnectionError(f"Connection error to {endpoint}: {str(e)}",
                                            response=getattr(e, 'response', None))
                 
             except Exception as e:
-                # Error inesperado
+                # Unexpected error
                 self.error_count += 1
                 elapsed = time.time() - start_time
-                logger.error(f"Error inesperado en petición a {url} después de {elapsed:.3f}s: {str(e)}")
-                raise APIError(f"Error inesperado en petición a {endpoint}: {str(e)}")
+                logger.error(f"Unexpected error in request to {url} after {elapsed:.3f}s: {str(e)}")
+                raise APIError(f"Unexpected error in request to {endpoint}: {str(e)}")
         
-        # Si llegamos aquí es porque agotamos los reintentos
+        # If we get here, we have exhausted the retries
         if last_error:
             self.error_count += 1
-            raise APIError(f"Petición a {endpoint} falló después de {retries} reintentos: {str(last_error)}")
+            raise APIError(f"Request to {endpoint} failed after {retries} retries: {str(last_error)}")
         
-        # Este punto nunca debería alcanzarse
-        raise APIError(f"Error inesperado en petición a {endpoint}")
+        # This point should never be reached
+        raise APIError(f"Unexpected error in request to {endpoint}")
     
     def get(self, endpoint: str, **kwargs) -> Response:
         """Makes a GET request."""
@@ -352,7 +352,7 @@ class APIClient:
         try:
             return response.json()
         except Exception as e:
-            raise APIError(f"Error al parsear respuesta JSON: {str(e)}", response=response)
+            raise APIError(f"Error parsing JSON response: {str(e)}", response=response)
     
     def post_json(self, endpoint: str, **kwargs) -> Any:
         """
@@ -369,9 +369,9 @@ class APIClient:
         try:
             return response.json()
         except Exception as e:
-            raise APIError(f"Error al parsear respuesta JSON: {str(e)}", response=response)
+            raise APIError(f"Error parsing JSON response: {str(e)}", response=response)
     
-    # Métodos de alto nivel para operaciones comunes en la API de Corebrain
+    # High-level methods for common operations in the Corebrain API
     
     def check_health(self, timeout: int = 5) -> bool:
         """
@@ -409,7 +409,7 @@ class APIClient:
         except APIAuthError:
             raise
         except Exception as e:
-            raise APIAuthError(f"Error al verificar token: {str(e)}")
+            raise APIAuthError(f"Error verifying token: {str(e)}")
     
     def get_api_keys(self, token: str) -> List[Dict[str, Any]]:
         """
@@ -475,7 +475,7 @@ class APIClient:
         data = {"user_data": user_data}
         return self.post_json("api/auth/sso/token", headers=headers, json=data)
     
-    # Métodos para estadísticas y diagnóstico
+    # Methods for statistics and diagnostics
     
     def get_stats(self) -> Dict[str, Any]:
         """

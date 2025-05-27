@@ -33,7 +33,7 @@ class SQLConnector(DatabaseConnector):
         self.cursor = None
         self.engine = config.get("engine", "").lower()
         self.config = config
-        self.connection_timeout = 30  # segundos
+        self.connection_timeout = 30  # seconds
     
     def connect(self) -> bool:
         """
@@ -45,7 +45,7 @@ class SQLConnector(DatabaseConnector):
         try:
             start_time = time.time()
             
-            # Intentar la conexión con un límite de tiempo
+            # Attempt to connect with a time limit
             while time.time() - start_time < self.connection_timeout:
                 try:
                     if self.engine == "sqlite":
@@ -54,7 +54,7 @@ class SQLConnector(DatabaseConnector):
                         else:
                             self.conn = sqlite3.connect(self.config.get("database", ""), timeout=10.0)
                         
-                        # Configurar para que devuelva filas como diccionarios
+                        # Configure to return rows as dictionaries
                         self.conn.row_factory = sqlite3.Row
                         
                     elif self.engine == "mysql":
@@ -74,9 +74,9 @@ class SQLConnector(DatabaseConnector):
                             )
                     
                     elif self.engine == "postgresql":
-                        # Determinar si usar cadena de conexión o parámetros
+                        # Determine whether to use connection string or parameters
                         if "connection_string" in self.config:
-                            # Agregar timeout a la cadena de conexión si no está presente
+                            # Add timeout to the connection string if not present
                             conn_str = self.config["connection_string"]
                             if "connect_timeout" not in conn_str:
                                 if "?" in conn_str:
@@ -95,24 +95,24 @@ class SQLConnector(DatabaseConnector):
                                 connect_timeout=10
                             )
                     
-                    # Si llegamos aquí, la conexión fue exitosa
+                    # If we get here, the connection was successful.
                     if self.conn:
-                        # Verificar conexión con una consulta simple
+                        # Check connection with a simple query
                         cursor = self.conn.cursor()
                         cursor.execute("SELECT 1")
                         cursor.close()
                         return True
                         
                 except (sqlite3.Error, mysql.connector.Error, psycopg2.Error) as e:
-                    # Si el error no es de timeout, propagar la excepción
-                    if "timeout" not in str(e).lower() and "tiempo de espera" not in str(e).lower():
+                    # If the error is not a timeout, propagate the exception
+                    if "timeout" not in str(e).lower() and "wait timeout" not in str(e).lower():
                         raise
                     
-                    # Si es un error de timeout, esperamos un poco y reintentamos
+                    # If it is a timeout error, we wait a bit and try again.
                     time.sleep(1.0)
             
-            # Si llegamos aquí, se agotó el tiempo de espera
-            raise TimeoutError(f"No se pudo conectar a la base de datos en {self.connection_timeout} segundos")
+            # If we get here, the wait time is up.
+            raise TimeoutError(f"Could not connect to the database in {self.connection_timeout} seconds")
                 
         except Exception as e:
             if self.conn:
@@ -122,7 +122,7 @@ class SQLConnector(DatabaseConnector):
                     pass
                 self.conn = None
             
-            print(f"Error al conectar a la base de datos: {str(e)}")
+            print(f"Error connecting to the database: {str(e)}")
             return False
     
     def extract_schema(self, sample_limit: int = 5, table_limit: Optional[int] = None, 
@@ -138,11 +138,11 @@ class SQLConnector(DatabaseConnector):
         Returns:
             Dictionary with the database schema
         """
-        # Asegurar que estamos conectados
+        # Ensure we are connected
         if not self.conn and not self.connect():
             return {"type": "sql", "tables": {}, "tables_list": []}
         
-        # Inicializar esquema
+        # Initialize schema
         schema = {
             "type": "sql",
             "engine": self.engine,
@@ -150,7 +150,7 @@ class SQLConnector(DatabaseConnector):
             "tables": {}
         }
         
-        # Seleccionar la función extractora según el motor
+        # Select the extractor function according to the motor
         if self.engine == "sqlite":
             return self._extract_sqlite_schema(sample_limit, table_limit, progress_callback)
         elif self.engine == "mysql":
@@ -158,7 +158,7 @@ class SQLConnector(DatabaseConnector):
         elif self.engine == "postgresql":
             return self._extract_postgresql_schema(sample_limit, table_limit, progress_callback)
         else:
-            return schema  # Esquema vacío si no se reconoce el motor
+            return schema  # Empty diagram if the engine is not recognized
     
     def execute_query(self, query: str) -> List[Dict[str, Any]]:
         """
@@ -174,7 +174,7 @@ class SQLConnector(DatabaseConnector):
             raise ConnectionError("No se pudo establecer conexión con la base de datos")
         
         try:
-            # Ejecutar query según el motor
+            # Execute query according to the engine
             if self.engine == "sqlite":
                 return self._execute_sqlite_query(query)
             elif self.engine == "mysql":
@@ -182,14 +182,14 @@ class SQLConnector(DatabaseConnector):
             elif self.engine == "postgresql":
                 return self._execute_postgresql_query(query)
             else:
-                raise ValueError(f"Motor de base de datos no soportado: {self.engine}")
+                raise ValueError(f"Database engine not supported: {self.engine}")
         
         except Exception as e:
-            # Intentar reconectar y reintentar una vez
+            # Try to reconnect and try again once
             try:
                 self.close()
                 if self.connect():
-                    print("Reconectando y reintentando consulta...")
+                    print("Reconnecting and retrying query...")
                     
                     if self.engine == "sqlite":
                         return self._execute_sqlite_query(query)
@@ -199,18 +199,18 @@ class SQLConnector(DatabaseConnector):
                         return self._execute_postgresql_query(query)
                     
             except Exception as retry_error:
-                # Si falla el reintento, propagar el error original
-                raise Exception(f"Error al ejecutar consulta: {str(e)}")
+                # If the retry fails, propagate the original error
+                raise Exception(f"Error executing query: {str(e)}")
             
-            # Si llegamos aquí sin retornar, ha habido un error en el reintento
-            raise Exception(f"Error al ejecutar consulta (después de reconexión): {str(e)}")
+            # If we get here without returning, there was an error in the retry.
+            raise Exception(f"Error executing query (after reconnection): {str(e)}")
     
     def _execute_sqlite_query(self, query: str) -> List[Dict[str, Any]]:
         """Executes a query in SQLite."""
         cursor = self.conn.cursor()
         cursor.execute(query)
         
-        # Convertir filas a diccionarios
+        # Convert rows to dictionaries
         columns = [desc[0] for desc in cursor.description] if cursor.description else []
         rows = cursor.fetchall()
         result = []
@@ -262,44 +262,44 @@ class SQLConnector(DatabaseConnector):
         try:
             cursor = self.conn.cursor()
             
-            # Obtener la lista de tablas
+            # Get the list of tables
             cursor.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;")
             tables = [row[0] for row in cursor.fetchall()]
             
-            # Limitar tablas si es necesario
+            # Limit tables if necessary
             if table_limit is not None and table_limit > 0:
                 tables = tables[:table_limit]
             
-            # Procesar cada tabla
+            # Process each table
             total_tables = len(tables)
             for i, table_name in enumerate(tables):
-                # Reportar progreso si hay callback
+                # Report progress if there is a callback
                 if progress_callback:
-                    progress_callback(i, total_tables, f"Procesando tabla {table_name}")
+                    progress_callback(i, total_tables, f"Processing table {table_name}")
                 
-                # Extraer información de columnas
+                # Extract information from columns
                 cursor.execute(f"PRAGMA table_info({table_name});")
                 columns = [{"name": col[1], "type": col[2]} for col in cursor.fetchall()]
                 
-                # Guardar información básica de la tabla
+                # Save basic table information
                 schema["tables"][table_name] = {
                     "columns": columns,
                     "sample_data": []
                 }
                 
-                # Obtener muestra de datos
+                # Get data sample
                 try:
                     cursor.execute(f"SELECT * FROM {table_name} LIMIT {sample_limit};")
                     
-                    # Obtener nombres de columnas
+                    # Get column names
                     col_names = [desc[0] for desc in cursor.description]
                     
-                    # Procesar las filas
+                    # Process the rows
                     sample_data = []
                     for row in cursor.fetchall():
                         row_dict = {}
                         for j, value in enumerate(row):
-                            # Convertir a string los valores que no son serializable directamente
+                            # Convert values ​​that are not directly serializable to string
                             if isinstance(value, (bytes, bytearray)):
                                 row_dict[col_names[j]] = f"<binary data: {len(value)} bytes>"
                             else:
@@ -309,14 +309,14 @@ class SQLConnector(DatabaseConnector):
                     schema["tables"][table_name]["sample_data"] = sample_data
                     
                 except Exception as e:
-                    print(f"Error al obtener muestra de datos para tabla {table_name}: {str(e)}")
+                    print(f"Error getting sample data for table {table_name}: {str(e)}") # TODO: Translate to English
             
             cursor.close()
             
         except Exception as e:
-            print(f"Error al extraer esquema SQLite: {str(e)}")
+            print(f"Error extracting SQLite schema: {str(e)}") # TODO: Translate to English
         
-        # Crear la lista de tablas para compatibilidad
+        # Create the list of tables for compatibility
         table_list = []
         for table_name, table_info in schema["tables"].items():
             table_data = {"name": table_name}
@@ -348,55 +348,55 @@ class SQLConnector(DatabaseConnector):
         try:
             cursor = self.conn.cursor(dictionary=True)
             
-            # Obtener la lista de tablas
+            # Get the list of tables
             cursor.execute("SHOW TABLES;")
             tables_result = cursor.fetchall()
             tables = []
             
-            # Extraer nombres de tablas (el formato puede variar según versión)
+            # Extract table names (format may vary depending on version)
             for row in tables_result:
-                if len(row) == 1:  # Si es una lista simple
+                if len(row) == 1:  # If it is a simple list
                     tables.extend(row.values())
-                else:  # Si tiene estructura compleja
+                else:  # If it has a complex structure
                     for value in row.values():
                         if isinstance(value, str):
                             tables.append(value)
                             break
             
-            # Limitar tablas si es necesario
+            # Limit tables if necessary
             if table_limit is not None and table_limit > 0:
                 tables = tables[:table_limit]
             
-            # Procesar cada tabla
+            # Process each table
             total_tables = len(tables)
             for i, table_name in enumerate(tables):
-                # Reportar progreso si hay callback
+                # Report progress if there is a callback
                 if progress_callback:
-                    progress_callback(i, total_tables, f"Procesando tabla {table_name}")
+                    progress_callback(i, total_tables, f"Processing table {table_name}")
                 
-                # Extraer información de columnas
+                # Extract information from columns
                 cursor.execute(f"DESCRIBE `{table_name}`;")
                 columns = [{"name": col.get("Field"), "type": col.get("Type")} for col in cursor.fetchall()]
                 
-                # Guardar información básica de la tabla
+                # Save basic table information
                 schema["tables"][table_name] = {
                     "columns": columns,
                     "sample_data": []
                 }
                 
-                # Obtener muestra de datos
+                # Get data sample
                 try:
                     cursor.execute(f"SELECT * FROM `{table_name}` LIMIT {sample_limit};")
                     sample_data = cursor.fetchall()
                     
-                    # Procesar valores que no son JSON serializable
+                    # Process values ​​that are not JSON serializable
                     processed_samples = []
                     for row in sample_data:
                         processed_row = {}
                         for key, value in row.items():
                             if isinstance(value, (bytes, bytearray)):
                                 processed_row[key] = f"<binary data: {len(value)} bytes>"
-                            elif hasattr(value, 'isoformat'):  # Para fechas y horas
+                            elif hasattr(value, 'isoformat'):  # For dates and times
                                 processed_row[key] = value.isoformat()
                             else:
                                 processed_row[key] = value
@@ -405,14 +405,14 @@ class SQLConnector(DatabaseConnector):
                     schema["tables"][table_name]["sample_data"] = processed_samples
                     
                 except Exception as e:
-                    print(f"Error al obtener muestra de datos para tabla {table_name}: {str(e)}")
+                    print(f"Error getting sample data for table {table_name}: {str(e)}") # TODO: Translate to English
             
             cursor.close()
             
         except Exception as e:
-            print(f"Error al extraer esquema MySQL: {str(e)}")
+            print(f"Error extracting MySQL schema: {str(e)}") # TODO: Translate to English
         
-        # Crear la lista de tablas para compatibilidad
+        # Create the list of tables for compatibility
         table_list = []
         for table_name, table_info in schema["tables"].items():
             table_data = {"name": table_name}
@@ -444,7 +444,7 @@ class SQLConnector(DatabaseConnector):
         try:
             cursor = self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             
-            # Estrategia 1: Buscar en todos los esquemas accesibles
+            # Strategy 1: Search all accessible schemas
             cursor.execute("""
                 SELECT table_schema, table_name 
                 FROM information_schema.tables 
@@ -454,7 +454,7 @@ class SQLConnector(DatabaseConnector):
             """)
             tables = cursor.fetchall()
             
-            # Si no se encontraron tablas, intentar estrategia alternativa
+            # If no tables were found, try alternative strategy
             if not tables:
                 cursor.execute("""
                     SELECT schemaname AS table_schema, tablename AS table_name 
@@ -464,7 +464,7 @@ class SQLConnector(DatabaseConnector):
                 """)
                 tables = cursor.fetchall()
             
-            # Si aún no hay tablas, intentar buscar en esquemas específicos
+            # If there are no tables yet, try searching in specific schemas
             if not tables:
                 cursor.execute("""
                     SELECT DISTINCT table_schema 
@@ -473,7 +473,7 @@ class SQLConnector(DatabaseConnector):
                 """)
                 schemas = cursor.fetchall()
                 
-                # Intentar con esquemas que no sean del sistema
+                # Try non-system schemes
                 user_schemas = [s[0] for s in schemas if s[0] not in ('pg_catalog', 'information_schema')]
                 for schema_name in user_schemas:
                     cursor.execute(f"""
@@ -486,21 +486,21 @@ class SQLConnector(DatabaseConnector):
                     if schema_tables:
                         tables.extend(schema_tables)
             
-            # Limitar tablas si es necesario
+            # Limit tables if necessary
             if table_limit is not None and table_limit > 0:
                 tables = tables[:table_limit]
             
-            # Procesar cada tabla
+            # Process each table
             total_tables = len(tables)
             for i, (schema_name, table_name) in enumerate(tables):
-                # Reportar progreso si hay callback
+                # Report progress if there is a callback
                 if progress_callback:
                     progress_callback(i, total_tables, f"Procesando tabla {schema_name}.{table_name}")
                 
-                # Determinar el nombre completo de la tabla
+                # Determine the full name of the table
                 full_name = f"{schema_name}.{table_name}" if schema_name != 'public' else table_name
                 
-                # Extraer información de columnas
+                # Extract information from columns
                 cursor.execute(f"""
                     SELECT column_name, data_type 
                     FROM information_schema.columns 
@@ -513,23 +513,23 @@ class SQLConnector(DatabaseConnector):
                     columns = [{"name": col[0], "type": col[1]} for col in columns_data]
                     schema["tables"][full_name] = {"columns": columns, "sample_data": []}
                     
-                    # Obtener muestra de datos
+                    # Get data sample
                     try:
                         cursor.execute(f"""
                             SELECT * FROM "{schema_name}"."{table_name}" LIMIT {sample_limit};
                         """)
                         rows = cursor.fetchall()
                         
-                        # Obtener nombres de columnas
+                        # Get column names
                         col_names = [desc[0] for desc in cursor.description]
                         
-                        # Convertir filas a diccionarios
+                        # Convert rows to dictionaries
                         sample_data = []
                         for row in rows:
                             row_dict = {}
                             for j, value in enumerate(row):
-                                # Convertir a formato serializable
-                                if hasattr(value, 'isoformat'):  # Para fechas y horas
+                                # Convert to serializable format
+                                if hasattr(value, 'isoformat'):  # For dates and times
                                     row_dict[col_names[j]] = value.isoformat()
                                 elif isinstance(value, (bytes, bytearray)):
                                     row_dict[col_names[j]] = f"<binary data: {len(value)} bytes>"
@@ -540,40 +540,40 @@ class SQLConnector(DatabaseConnector):
                         schema["tables"][full_name]["sample_data"] = sample_data
                         
                     except Exception as e:
-                        print(f"Error al obtener muestra de datos para tabla {full_name}: {str(e)}")
+                        print(f"Error getting sample data for table {full_name}: {str(e)}") # TODO: Translate to English
                 else:
-                    # Registrar la tabla aunque no tenga columnas
+                    # Register the table even if it has no columns
                     schema["tables"][full_name] = {"columns": [], "sample_data": []}
             
             cursor.close()
             
         except Exception as e:
-            print(f"Error al extraer esquema PostgreSQL: {str(e)}")
+            print(f"Error extracting PostgreSQL schema: {str(e)}") # TODO: Translate to English
             
-            # Intento de recuperación para diagnosticar problemas
+            # Recovery attempt to diagnose problems
             try:
-                if self.conn and self.conn.closed == 0:  # 0 = conexión abierta
+                if self.conn and self.conn.closed == 0:  # 0 = open connection
                     recovery_cursor = self.conn.cursor()
                     
-                    # Verificar versión
+                    # Check version
                     recovery_cursor.execute("SELECT version();")
                     version = recovery_cursor.fetchone()
-                    print(f"Versión PostgreSQL: {version[0] if version else 'Desconocida'}")
+                    print(f"PostgreSQL version: {version[0] if version else 'Unknown'}")
                     
-                    # Verificar permisos
+                    # Check permissions
                     recovery_cursor.execute("""
                         SELECT has_schema_privilege(current_user, 'public', 'USAGE') AS has_usage,
                                has_schema_privilege(current_user, 'public', 'CREATE') AS has_create;
                     """)
                     perms = recovery_cursor.fetchone()
                     if perms:
-                        print(f"Permisos en esquema public: USAGE={perms[0]}, CREATE={perms[1]}")
+                        print(f"Permissions in public schema: USAGE={perms[0]}, CREATE={perms[1]}") # TODO: Translate to English
                         
                     recovery_cursor.close()
             except Exception as diag_err:
-                print(f"Error durante el diagnóstico: {str(diag_err)}")
+                print(f"Error during diagnosis: {str(diag_err)}") # TODO: Translate to English
         
-        # Crear la lista de tablas para compatibilidad
+        # Create the list of tables for compatibility
         table_list = []
         for table_name, table_info in schema["tables"].items():
             table_data = {"name": table_name}

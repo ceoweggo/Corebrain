@@ -8,7 +8,7 @@ from corebrain.core.client import Corebrain, init
 from corebrain.core.query import QueryCache, QueryAnalyzer, QueryTemplate
 from corebrain.core.test_utils import test_natural_language_query, generate_test_question_from_schema
 
-# Exportación explícita de componentes públicos
+# Export public componentes
 __all__ = [
     'Corebrain',
     'init',

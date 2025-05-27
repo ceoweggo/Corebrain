@@ -36,8 +36,10 @@ pip install corebrain
 ### From source code
 
 ```bash
+
 git clone https://github.com/ceoweggo/Corebrain.git
 pip install -e .
+
 ```
 
 ## 🚀 Quick Start Guide
@@ -158,7 +160,12 @@ git clone https://github.com/ceoweggo/Corebrain.git
 cd corebrain
 
 # Install in development mode with extra tools
-pip install -e ".[dev,all_db]"
+
+# On Windows (use powershell)
+.\setup.ps1
+
+# On Linux/macOS (use bash)
+./setup.sh
 ```
 
 ### Verifying Style and Typing

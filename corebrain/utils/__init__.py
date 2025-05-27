@@ -14,7 +14,6 @@ from corebrain.utils.encrypter import (
     ConfigEncrypter
 )
 
-# Configuración de logging
 logger = logging.getLogger('corebrain')
 
 def setup_logger(level=logging.INFO, 
@@ -28,32 +27,32 @@ def setup_logger(level=logging.INFO,
         file_path: Path to log file (optional)
         format_string: Custom log format
     """
-    # Formato predeterminado
+    # Default format
     fmt = format_string or '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     formatter = logging.Formatter(fmt)
     
-    # Handler de consola
+    # Console handler
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(formatter)
     
-    # Configurar logger principal
+    # Configure main logger
     logger.setLevel(level)
     logger.addHandler(console_handler)
     
-    # Handler de archivo si se proporciona ruta
+    # File handler if path is provided
     if file_path:
         file_handler = logging.FileHandler(file_path)
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
     
-    # Mensajes de diagnóstico
-    logger.debug(f"Logger configurado con nivel {logging.getLevelName(level)}")
+    # Diagnostic messages
+    logger.debug(f"Logger configured with level {logging.getLevelName(level)}")
     if file_path:
-        logger.debug(f"Logs escritos a {file_path}")
+        logger.debug(f"Logs written to {file_path}")
     
     return logger
 
-# Exportación explícita de componentes públicos
+# Explicit export of public components
 __all__ = [
     'serialize_to_json',
     'JSONEncoder',

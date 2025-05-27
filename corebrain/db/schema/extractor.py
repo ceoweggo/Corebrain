@@ -1,4 +1,4 @@
-# db/schema/extractor.py (reemplaza la importación circular en db/schema.py)
+# db/schema/extractor.py (replaces circular import in db/schema.py)
 
 """
 Independent database schema extractor.
@@ -30,35 +30,35 @@ def extract_db_schema(db_config: Dict[str, Any], client_factory: Optional[Callab
     }
     
     try:
-        # Si tenemos un cliente especializado, usarlo
+        # If we have a specialized client, use it
         if client_factory:
-            # La factoría crea un cliente y extrae el esquema
+            # The factory creates a client and extracts the schema
             client = client_factory(db_config)
             return client.extract_schema()
         
-        # Extracción directa sin usar cliente de Corebrain
+        # Direct extraction without using Corebrain client
         if db_type == "sql":
-            # Código para bases de datos SQL (sin dependencias circulares)
+            # Code for SQL databases (without circular dependencies)
             engine = db_config.get("engine", "").lower()
             if engine == "sqlite":
-                # Extraer esquema SQLite
+                # Extract SQLite schema
                 import sqlite3
-                # (implementación...)
+                # (implementation...)
             elif engine == "mysql":
                 # Extraer esquema MySQL
                 import mysql.connector
-                # (implementación...)
+                # (implementation...)
             elif engine == "postgresql":
                 # Extraer esquema PostgreSQL
                 import psycopg2
                 # (implementación...)
                 
         elif db_type in ["nosql", "mongodb"]:
-            # Extraer esquema MongoDB
+            # Extract MongoDB schema
             import pymongo
-            # (implementación...)
+            # (implementation...)
             
-        # Convertir diccionario a lista para compatibilidad
+        # Convert dictionary to list for compatibility
         table_list = []
         for table_name, table_info in schema["tables"].items():
             table_data = {"name": table_name}
@@ -82,10 +82,10 @@ def create_schema_from_corebrain() -> Callable:
         Function that extracts schema using Corebrain
     """
     def extract_with_corebrain(db_config: Dict[str, Any]) -> Dict[str, Any]:
-        # Importar dinámicamente para evitar circular
+        # Import dynamically to avoid circularity
         from corebrain.core.client import Corebrain
         
-        # Crear cliente temporal solo para extraer el schema
+        # Create temporary client just to extract the schema
         try:
             client = Corebrain(
                 api_token="temp_token",
@@ -102,7 +102,7 @@ def create_schema_from_corebrain() -> Callable:
     return extract_with_corebrain
 
 
-# Función pública expuesta
+# Public function exposed
 def extract_schema(db_config: Dict[str, Any], use_corebrain: bool = False) -> Dict[str, Any]:
     """
     Public function that decides how to extract the schema.
@@ -115,9 +115,9 @@ def extract_schema(db_config: Dict[str, Any], use_corebrain: bool = False) -> Di
         Database schema
     """
     if use_corebrain:
-        # Intentar usar Corebrain si se solicita
+        # Attempt to use Corebrain if requested
         factory = create_schema_from_corebrain()
         return extract_db_schema(db_config, client_factory=factory)
     else:
-        # Usar extracción directa sin dependencias circulares
+        # Use direct extraction without circular dependencies
         return extract_db_schema(db_config)
