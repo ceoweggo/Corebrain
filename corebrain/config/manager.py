@@ -270,11 +270,11 @@ class ConfigManager:
             _print_colored("No configurations found for the selected API Key.", "yellow")
             return None
 
-        print(f"\nConfigurations for API Key {selected_api_key[:8]}...")
+        print(f"\nConfigurations for API Key {selected_api_key}...")
         config_ids = list(configs.keys())
         for idx, config_id in enumerate(config_ids, 1):
             status = " [ACTIVE]" if configs[config_id].get("active") else ""
-            print(f"  {idx}. {config_id}{status}")
+            _print_colored(f"  {idx}. {config_id}{status}","blue")
             for k, v in configs[config_id].items():
                 print(f"       {k}: {v}")
 
