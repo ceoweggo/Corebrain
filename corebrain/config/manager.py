@@ -106,7 +106,7 @@ class ConfigManager:
         try:
             self.CONFIG_DIR.mkdir(parents=True, exist_ok=True)
             logger.debug(f"Configuration directory ensured: {self.CONFIG_DIR}")
-            _print_colored(f"Configuration directory ensured: {self.CONFIG_DIR}", "blue")
+            _print_colored(f"Configuration dire:ctory ensured: {self.CONFIG_DIR}", "blue")
         except Exception as e:
             logger.error(f"Error creating configuration directory: {str(e)}")
             _print_colored(f"Error creating configuration directory: {str(e)}", "red")
@@ -374,11 +374,8 @@ class ConfigManager:
                 try:
                     config_id = config_ids[int(selected_idx) - 1]
                     config = self.get_config(api_key_selected, config_id)
-
-                    # Prompt for credentials handling
                     include_credentials = input("Include credentials in export? (y/n): ").strip().lower() == "y"
                     shareable = input("Export as shareable version? (y/n): ").strip().lower() == "y"
-
                     export_config(config, include_credentials=include_credentials, shareable=shareable)
 
                 except (ValueError, IndexError):
