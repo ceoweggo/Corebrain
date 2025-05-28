@@ -230,7 +230,7 @@ def test_connection(db_config: Dict[str, Any]) -> bool:
         _print_colored(f"Failed to connect to the database: {str(e)}", "red")
         return False
 
-def extract_schema_to_file(api_key: str, config_id: Optional[str] = None, output_file: Optional[str] = None, api_url: Optional[str] = None) -> bool:
+def extract_schema_to_file(config ,api_key: str, config_id: Optional[str] = None, output_file: Optional[str] = None, api_url: Optional[str] = None) -> bool:
     """
     Extracts the database schema and saves it to a file.
     
@@ -326,7 +326,7 @@ def extract_schema_to_file(api_key: str, config_id: Optional[str] = None, output
         _print_colored(f"❌ Error extracting schema: {str(e)}", "red")
         return False
 
-def show_db_schema(api_token: str, config_id: Optional[str] = None, api_url: Optional[str] = None) -> None:
+def show_db_schema(config ,api_token: str, config_id: Optional[str] = None, api_url: Optional[str] = None) -> None:
     """
     Displays the schema of the configured database.
     
@@ -335,51 +335,10 @@ def show_db_schema(api_token: str, config_id: Optional[str] = None, api_url: Opt
         config_id: Specific configuration ID (optional)
         api_url: Optional API URL
     """
-    try:
-        # Explicit import with try-except to handle errors
-        try:
-            from corebrain.config.manager import ConfigManager
-        except ImportError as e:
-            _print_colored(f"Error importing ConfigManager: {e}", "red")
-            return False
-        
-        # Get the available configurations
-        config_manager = ConfigManager()
-        configs = config_manager.list_configs(api_token)
-        
-        if not configs:
-            _print_colored("No configurations saved for this token.", "yellow")
-            return
-        
+    try: 
+        configs = config
         selected_config_id = config_id
-        
-        # If no config_id is specified, show list to select
-        if not selected_config_id:
-            _print_colored("\n=== Available configurations ===", "blue")
-            for i, conf_id in enumerate(configs, 1):
-                print(f"{i}. {conf_id}")
-            
-            try:
-                choice = int(input(f"\nSelect a configuration (1-{len(configs)}): ").strip())
-                if 1 <= choice <= len(configs): 
-                    selected_config_id = configs[choice - 1]
-                else:
-                    _print_colored("Invalid option.", "red")
-                    return
-            except ValueError:
-                _print_colored("Please enter a valid number.", "red")
-                return
-        
-        # Verify that the config_id exists
-        if selected_config_id not in configs:
-            _print_colored(f"No configuration found with ID: {selected_config_id}", "red")
-            return
-        
-        if config_id and config_id in configs:
-            db_config = config_manager.get_config(api_token, config_id)
-        else:
-            # Get the selected configuration
-            db_config = config_manager.get_config(api_token, selected_config_id)
+        db_config = config
             
         if not db_config:
             _print_colored(f"Error getting configuration with ID: {selected_config_id}", "red")
@@ -397,7 +356,7 @@ def show_db_schema(api_token: str, config_id: Optional[str] = None, api_url: Opt
         print(f"  {db_config.get('database', 'No specified')}")
         
         # Extract and show the schema
-        _print_colored("\nExtracting schema from the database...", "blue")
+        _print_colored("\nExtracting schema from the database...", "bglue")
         
         # Try to connect to the database and extract the schema
         try:
