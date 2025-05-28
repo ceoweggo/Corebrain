@@ -1,0 +1,10 @@
+{
+    "type": "nosql",
+    "engine": "mongodb",
+    "host": "localhost",
+    "port": 27017,
+    "database": "baza",
+    "config_id": "a1e0694f-112d-4ade-aa31-68e6d83abab6",
+    "excluded_tables": [],
+    "active": true
+}

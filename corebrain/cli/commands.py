@@ -729,7 +729,7 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
                 management with confirmation prompts for destructive operations.
                 """
                 manager = ConfigManager()
-                manager.list_configs(api_key_selected)
+                manager.list_configs(api_key_selected,user_data,api_token)
 
             elif args.show_schema:
                 """
@@ -760,7 +760,7 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
                 Note: This command only reads schema information and doesn't modify
                 the database in any way. It's safe to run on production databases.
                 """
-                show_db_schema(api_key, args.config_id, api_url)
+                show_db_schema(api_key_selected, args.config_id, api_url)
 
 
 
