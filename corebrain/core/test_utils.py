@@ -20,25 +20,25 @@ def generate_test_question_from_schema(schema: Dict[str, Any]) -> str:
         Generated test question
     """
     if not schema or not schema.get("tables"):
-        return "¿Cuáles son las tablas disponibles?"
+        return "What are the available tables?"
     
     tables = schema["tables"]
     
     if not tables:
-        return "¿Cuáles son las tablas disponibles?"
+        return "What are the available tables?"
     
-    # Seleccionar una tabla aleatoria
+    # Select a random table
     table = random.choice(tables)
     table_name = table["name"]
     
-    # Determinar el tipo de pregunta
+    # Determine the type of question
     question_types = [
-        f"¿Cuántos registros hay en la tabla {table_name}?",
-        f"Muestra los primeros 5 registros de {table_name}",
-        f"¿Cuáles son los campos de la tabla {table_name}?",
+        f"How many records are in the {table_name} table?",
+        f"Show the first 5 records from {table_name}",
+        f"What are the fields in the {table_name} table?",
     ]
     
-    # Obtener columnas según la estructura (SQL vs NoSQL)
+    # Get columns according to structure (SQL vs NoSQL)
     columns = []
     if "columns" in table and table["columns"]:
         columns = table["columns"]
@@ -46,13 +46,13 @@ def generate_test_question_from_schema(schema: Dict[str, Any]) -> str:
         columns = table["fields"]
     
     if columns:
-        # Si tenemos información de columnas/campos
+        # If we have information from columns/fields
         column_name = columns[0]["name"] if columns else "id"
         
-        # Añadir preguntas específicas con columnas
+        # Add specific questions with columns
         question_types.extend([
-            f"¿Cuál es el valor máximo de {column_name} en {table_name}?",
-            f"¿Cuáles son los valores únicos de {column_name} en {table_name}?",
+            f"What is the maximum value of {column_name} in {table_name}?",
+            f"What are the unique values of {column_name} in {table_name}?",
         ])
     
     return random.choice(question_types)
@@ -71,18 +71,18 @@ def test_natural_language_query(api_token: str, db_config: Dict[str, Any], api_u
         True if the test is successful, False otherwise
     """
     try:
-        print_colored("\nRealizando prueba de consulta en lenguaje natural...", "blue")
+        print_colored("\nPerforming natural language query test...", "blue")
         
-        # Importación dinámica para evitar circular imports
+        # Dynamic import to avoid circular imports
         from db.schema_file import extract_db_schema
         
-        # Generar una pregunta de prueba basada en el esquema extraído directamente
+        # Generate a test question based on the directly extracted schema
         schema = extract_db_schema(db_config)
-        print("REcoge esquema: ", schema)
+        print("Retrieved schema: ", schema)
         question = generate_test_question_from_schema(schema)
-        print(f"Pregunta de prueba: {question}")
+        print(f"Test question: {question}")
         
-        # Preparar los datos para la petición
+        # Prepare the data for the request
         api_url = api_url or DEFAULT_API_URL
         if not api_url.startswith(("http://", "https://")):
             api_url = "https://" + api_url
@@ -90,26 +90,26 @@ def test_natural_language_query(api_token: str, db_config: Dict[str, Any], api_u
         if api_url.endswith('/'):
             api_url = api_url[:-1]
         
-        # Construir endpoint para la consulta
+        # Build endpoint for the query
         endpoint = f"{api_url}/api/database/sdk/query"
         
-        # Datos para la consulta
+        # Data for the query
         request_data = {
             "question": question,
             "db_schema": schema,
             "config_id": db_config["config_id"]
         }
         
-        # Realizar la petición al API
+        # Make the request to the API
         headers = {
             "Authorization": f"Bearer {api_token}",
             "Content-Type": "application/json"
         }
         
-        timeout = 15.0  # Tiempo máximo de espera reducido
+        timeout = 15.0  # Reduced maximum waiting time
         
         try:
-            print_colored("Enviando consulta al API...", "blue")
+            print_colored("Sending query to API...", "blue")
             response = http_session.post(
                 endpoint,
                 headers=headers,
@@ -117,25 +117,25 @@ def test_natural_language_query(api_token: str, db_config: Dict[str, Any], api_u
                 timeout=timeout
             )
             
-            # Verificar la respuesta
+            # Check the answer
             if response.status_code == 200:
                 result = response.json()
                 
-                # Verificar si hay explicación en el resultado
+                # Check if there is an explanation in the result
                 if "explanation" in result:
-                    print_colored("\nRespuesta:", "green")
+                    print_colored("\nResponse:", "green")
                     print(result["explanation"])
                     
-                    print_colored("\n✅ Prueba de consulta exitosa!", "green")
+                    print_colored("\n✅ Query test successful!", "green")
                     return True
                 else:
-                    # Si no hay explicación pero la API responde, puede ser un formato diferente
+                    # If there is no explanation but the API responds, it may be a different format
                     print_colored("\nRespuesta recibida del API (formato diferente al esperado):", "yellow")
                     print(json.dumps(result, indent=2))
-                    print_colored("\n⚠️ La API respondió, pero con un formato diferente al esperado.", "yellow")
+                    print_colored("\n⚠️ The API responded, but with a different format than expected.", "yellow")
                     return True
             else:
-                print_colored(f"❌ Error en la respuesta: Código {response.status_code}", "red")
+                print_colored(f"❌ Error in response: Code {response.status_code}", "red")
                 try:
                     error_data = response.json()
                     print(json.dumps(error_data, indent=2))
@@ -144,14 +144,14 @@ def test_natural_language_query(api_token: str, db_config: Dict[str, Any], api_u
                 return False
                 
         except http_session.TimeoutException:
-            print_colored("⚠️ Timeout al realizar la consulta. El API puede estar ocupado o no disponible.", "yellow")
-            print_colored("Esto no afecta a la configuración guardada.", "yellow")
+            print_colored("⚠️ Timeout while performing query. The API may be busy or unavailable.", "yellow")
+            print_colored("This does not affect the saved configuration.", "yellow")
             return False
         except http_session.RequestError as e:
-            print_colored(f"⚠️ Error de conexión: {str(e)}", "yellow")
-            print_colored("Verifica la URL de la API y tu conexión a internet.", "yellow")
+            print_colored(f"⚠️ Connection error: {str(e)}", "yellow")
+            print_colored("Check the API URL and your internet connection.", "yellow")
             return False
             
     except Exception as e:
-        print_colored(f"❌ Error al realizar la consulta: {str(e)}", "red")
+        print_colored(f"❌ Error performing query: {str(e)}", "red")
         return False

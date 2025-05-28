@@ -1,5 +1,4 @@
 #!/bin/bash
-# Utwórz i aktywuj środowisko wirtualne
 python3 -m venv venv
 source venv/bin/activate
 

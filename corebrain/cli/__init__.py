@@ -7,7 +7,7 @@ and use the Corebrain SDK for natural language queries to databases.
 import sys
 from typing import Optional, List
 
-# Importar componentes principales para CLI
+# Import core components for CLI
 from corebrain.cli.commands import main_cli
 from corebrain.cli.utils import print_colored, ProgressTracker, get_free_port
 from corebrain.cli.config import (
@@ -26,7 +26,7 @@ from corebrain.cli.auth import (
 )
 
 
-# Exportación explícita de componentes públicos
+# Explicit export of public components
 __all__ = [
     'main_cli',
     'run_cli',
@@ -40,7 +40,7 @@ __all__ = [
     'verify_api_token'
 ]
 
-# Función de conveniencia para ejecutar CLI
+# Convenience function for running CLI
 def run_cli(argv: Optional[List[str]] = None) -> int:
     """
     Run the CLI with the provided arguments.

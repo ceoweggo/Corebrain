@@ -27,23 +27,23 @@ class QueryCache:
             ttl: Time-to-live of the cache in seconds (default: 24 hours)
             memory_limit: Memory cache entry limit
         """
-        # Caché en memoria (más rápido, pero volátil)
+        # In-memory cache (faster, but volatile)
         self.memory_cache = {}
         self.memory_timestamps = {}
         self.memory_limit = memory_limit
-        self.memory_lru = []  # Lista para seguimiento de menos usados recientemente
+        self.memory_lru = []  # Least recently used tracking list
         
-        # Caché persistente (más lento, pero permanente)
+        # Persistent cache (slower, but permanent)
         self.ttl = ttl
         if cache_dir:
             self.cache_dir = Path(cache_dir)
         else:
             self.cache_dir = Path.home() / ".corebrain_cache"
             
-        # Crear directorio de caché si no existe
+        # Create cache directory if it does not exist
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         
-        # Inicializar base de datos SQLite para metadatos
+        # Initialize SQLite database for metadata
         self.db_path = self.cache_dir / "cache_metadata.db"
         self._init_db()
         
@@ -54,7 +54,7 @@ class QueryCache:
         conn = sqlite3.connect(str(self.db_path))
         cursor = conn.cursor()
         
-        # Crear tabla de metadatos si no existe
+        # Create metadata table if it does not exist
         cursor.execute('''
         CREATE TABLE IF NOT EXISTS cache_metadata (
             query_hash TEXT PRIMARY KEY,
@@ -71,21 +71,21 @@ class QueryCache:
     
     def _get_hash(self, query: str, config_id: str, collection_name: Optional[str] = None) -> str:
         """Generates a unique hash for the query."""
-        # Normalizar la consulta (eliminar espacios extra, convertir a minúsculas)
+        # Normalize the query (remove extra spaces, convert to lowercase)
         normalized_query = re.sub(r'\s+', ' ', query.lower().strip())
         
-        # Crear string compuesto para el hash
+        # Create composite string for the hash
         hash_input = f"{normalized_query}|{config_id}"
         if collection_name:
             hash_input += f"|{collection_name}"
             
-        # Generar el hash
+        # Generate the hash
         return hashlib.md5(hash_input.encode()).hexdigest()
     
     def _get_cache_path(self, query_hash: str) -> Path:
         """Gets the cache file path for a given hash."""
-        # Usar los primeros caracteres del hash para crear subdirectorios
-        # Esto evita tener demasiados archivos en un solo directorio
+        # Use the first characters of the hash to create subdirectories
+        # This prevents having too many files in a single directory
         subdir = query_hash[:2]
         cache_subdir = self.cache_dir / subdir
         cache_subdir.mkdir(exist_ok=True)
@@ -99,12 +99,12 @@ class QueryCache:
         
         now = datetime.now().isoformat()
         
-        # Verificar si el hash ya existe
+        # Check if the hash already exists
         cursor.execute("SELECT hit_count FROM cache_metadata WHERE query_hash = ?", (query_hash,))
         result = cursor.fetchone()
         
         if result:
-            # Actualizar entrada existente
+            # Update existing entry
             hit_count = result[0] + 1
             cursor.execute('''
             UPDATE cache_metadata 
@@ -112,7 +112,7 @@ class QueryCache:
             WHERE query_hash = ?
             ''', (now, hit_count, query_hash))
         else:
-            # Insertar nueva entrada
+            # Insert new entry
             cursor.execute('''
             INSERT INTO cache_metadata (query_hash, query, config_id, created_at, last_accessed, hit_count)
             VALUES (?, ?, ?, ?, ?, 1)
@@ -124,12 +124,12 @@ class QueryCache:
     def _update_memory_lru(self, query_hash: str):
         """Updates the LRU (Least Recently Used) list for the in-memory cache."""
         if query_hash in self.memory_lru:
-            # Mover al final (más recientemente usado)
+            # Move to end (most recently used)
             self.memory_lru.remove(query_hash)
         
         self.memory_lru.append(query_hash)
         
-        # Si excedemos el límite, eliminar el elemento menos usado recientemente
+        # If we exceed the limit, delete the least recently used item
         if len(self.memory_lru) > self.memory_limit:
             oldest_hash = self.memory_lru.pop(0)
             if oldest_hash in self.memory_cache:
@@ -150,7 +150,7 @@ class QueryCache:
         """
         query_hash = self._get_hash(query, config_id, collection_name)
         
-        # 1. Verificar caché en memoria (más rápido)
+        # 1. Check in-memory cache (faster)
         if query_hash in self.memory_cache:
             timestamp = self.memory_timestamps[query_hash]
             if (time.time() - timestamp) < self.ttl:
@@ -159,23 +159,23 @@ class QueryCache:
                 print_colored(f"Cache hit (memory): {query[:30]}...", "green")
                 return self.memory_cache[query_hash]
             else:
-                # Expirado en memoria
+                # Expired in memory
                 del self.memory_cache[query_hash]
                 del self.memory_timestamps[query_hash]
                 if query_hash in self.memory_lru:
                     self.memory_lru.remove(query_hash)
         
-        # 2. Verificar caché en disco
+        # 2. Check disk cache
         cache_path = self._get_cache_path(query_hash)
         if cache_path.exists():
-            # Verificar edad del archivo
+            # Check file age
             file_age = time.time() - cache_path.stat().st_mtime
             if file_age < self.ttl:
                 try:
                     with open(cache_path, 'rb') as f:
                         result = pickle.load(f)
                     
-                    # Guardar también en caché de memoria
+                    # Also save in memory cache
                     self.memory_cache[query_hash] = result
                     self.memory_timestamps[query_hash] = time.time()
                     self._update_memory_lru(query_hash)
@@ -185,10 +185,10 @@ class QueryCache:
                     return result
                 except Exception as e:
                     print_colored(f"Error al cargar caché: {str(e)}", "red")
-                    # Si hay error al cargar, eliminar el archivo corrupto
+                    # If there is an error when uploading, delete the corrupted file
                     cache_path.unlink(missing_ok=True)
             else:
-                # Archivo expirado, eliminarlo
+                # Expired file, delete it
                 cache_path.unlink(missing_ok=True)
         
         return None
@@ -205,18 +205,18 @@ class QueryCache:
         """
         query_hash = self._get_hash(query, config_id, collection_name)
         
-        # 1. Guardar en caché de memoria
+        # 1. Save to memory cache
         self.memory_cache[query_hash] = result
         self.memory_timestamps[query_hash] = time.time()
         self._update_memory_lru(query_hash)
         
-        # 2. Guardar en caché persistente
+        # 2. Save to persistent cache
         try:
             cache_path = self._get_cache_path(query_hash)
             with open(cache_path, 'wb') as f:
                 pickle.dump(result, f)
             
-            # 3. Actualizar metadatos
+            # 3. Update metadata
             self._update_metadata(query_hash, query, config_id)
             
             print_colored(f"Cached: {query[:30]}...", "green")
@@ -230,7 +230,7 @@ class QueryCache:
         Args:
             older_than: Only clear entries older than this number of seconds
         """
-        # Limpiar caché en memoria
+        # Clear cache in memory
         if older_than:
             current_time = time.time()
             keys_to_remove = [
@@ -250,15 +250,15 @@ class QueryCache:
             self.memory_timestamps.clear()
             self.memory_lru.clear()
         
-        # Limpiar caché en disco
+        # Clear disk cache
         if older_than:
             cutoff_time = time.time() - older_than
             
-            # Usar la base de datos para encontrar archivos antiguos
+            # Using the database to find old files
             conn = sqlite3.connect(str(self.db_path))
             cursor = conn.cursor()
             
-            # Convertir cutoff_time a formato ISO
+            # Convert cutoff_time to ISO format
             cutoff_datetime = datetime.fromtimestamp(cutoff_time).isoformat()
             
             cursor.execute(
@@ -268,13 +268,13 @@ class QueryCache:
             
             old_hashes = [row[0] for row in cursor.fetchall()]
             
-            # Eliminar archivos antiguos
+            # Delete old files
             for query_hash in old_hashes:
                 cache_path = self._get_cache_path(query_hash)
                 if cache_path.exists():
                     cache_path.unlink()
                 
-                # Eliminar de la base de datos
+                # Delete from the database
                 cursor.execute(
                     "DELETE FROM cache_metadata WHERE query_hash = ?",
                     (query_hash,)
@@ -283,13 +283,13 @@ class QueryCache:
             conn.commit()
             conn.close()
         else:
-            # Eliminar todos los archivos de caché
+            # Delete all cache files
             for subdir in self.cache_dir.iterdir():
                 if subdir.is_dir():
                     for cache_file in subdir.glob("*.cache"):
                         cache_file.unlink()
             
-            # Reiniciar la base de datos
+            # Restart the database
             conn = sqlite3.connect(str(self.db_path))
             cursor = conn.cursor()
             cursor.execute("DELETE FROM cache_metadata")
@@ -298,27 +298,27 @@ class QueryCache:
     
     def get_stats(self) -> Dict[str, Any]:
         """Gets cache statistics."""
-        # Contar archivos en disco
+        # Count files on disk
         disk_count = 0
         for subdir in self.cache_dir.iterdir():
             if subdir.is_dir():
                 disk_count += len(list(subdir.glob("*.cache")))
         
-        # Obtener estadísticas de la base de datos
+        # Obtaining database statistics
         conn = sqlite3.connect(str(self.db_path))
         cursor = conn.cursor()
         
-        # Total de entradas
+        # Total entries
         cursor.execute("SELECT COUNT(*) FROM cache_metadata")
         total_entries = cursor.fetchone()[0]
         
-        # Consultas más frecuentes
+        # Most frequent queries
         cursor.execute(
             "SELECT query, hit_count FROM cache_metadata ORDER BY hit_count DESC LIMIT 5"
         )
         top_queries = cursor.fetchall()
         
-        # Edad promedio
+        # Average age
         cursor.execute(
             "SELECT AVG(strftime('%s', 'now') - strftime('%s', created_at)) FROM cache_metadata"
         )
@@ -361,27 +361,27 @@ class QueryTemplate:
         self.db_type = db_type
         self.applicable_tables = applicable_tables or []
         
-        # Compilar expresión regular para el patrón
+        # Compile regular expression for the pattern
         self.regex = self._compile_pattern(pattern)
     
     def _compile_pattern(self, pattern: str) -> re.Pattern:
         """Compiles the pattern into a regular expression."""
-        # Reemplazar marcadores especiales con grupos de captura
+        # Replace special markers with capture groups
         regex_pattern = pattern
         
-        # {table} se convierte en grupo de captura para el nombre de tabla
+        # {table} becomes a capturing group for the table name
         regex_pattern = regex_pattern.replace("{table}", r"(\w+)")
         
-        # {field} se convierte en grupo de captura para el nombre de campo
+        # {field} becomes a capturing group for the field name
         regex_pattern = regex_pattern.replace("{field}", r"(\w+)")
         
-        # {value} se convierte en grupo de captura para un valor
+        # {value} becomes a capturing group for a value
         regex_pattern = regex_pattern.replace("{value}", r"([^,.\s]+)")
         
-        # {number} se convierte en grupo de captura para un número
+        # {number} becomes a capture group for a number
         regex_pattern = regex_pattern.replace("{number}", r"(\d+)")
         
-        # Hacer coincidir el patrón completo
+        # Match the entire pattern
         regex_pattern = f"^{regex_pattern}$"
         
         return re.compile(regex_pattern, re.IGNORECASE)
@@ -413,22 +413,22 @@ class QueryTemplate:
             Generated query or None if it cannot be generated
         """
         if self.generator_func:
-            # Usar función personalizada
+            # Use custom function
             return self.generator_func(params, db_schema)
         
         if not self.sql_template:
             return None
             
-        # Intentar aplicar la plantilla SQL con los parámetros
+        # Try to apply the SQL template with the parameters
         try:
             sql_query = self.sql_template
             
-            # Reemplazar parámetros en la plantilla
+            # Replace parameters in the template
             for i, param in enumerate(params):
                 placeholder = f"${i+1}"
                 sql_query = sql_query.replace(placeholder, param)
             
-            # Verificar si hay algún parámetro sin reemplazar
+            # Check if there are any unreplaced parameters
             if "$" in sql_query:
                 return None
                 
@@ -455,16 +455,16 @@ class QueryAnalyzer:
             Path.home(), ".corebrain_cache", "templates.json"
         )
         
-        # Inicializar base de datos
+        # Initialize database
         self._init_db()
         
-        # Plantillas predefinidas para consultas comunes
+        # Predefined templates for common queries
         self.templates = self._load_default_templates()
         
-        # Cargar plantillas personalizadas
+        # Upload custom templates
         self._load_custom_templates()
         
-        # Plantillas comunes para identificar patrones
+        # Common templates for identifying patterns
         self.common_patterns = [
             r"muestra\s+(?:todos\s+)?los\s+(\w+)",
             r"lista\s+(?:de\s+)?(?:todos\s+)?los\s+(\w+)",
@@ -475,13 +475,13 @@ class QueryAnalyzer:
     
     def _init_db(self):
         """Initializes the database for query logging."""
-        # Asegurar que el directorio existe
+        # Ensure that the directory exists
         os.makedirs(os.path.dirname(self.query_log_path), exist_ok=True)
         
         conn = sqlite3.connect(self.query_log_path)
         cursor = conn.cursor()
         
-        # Crear tabla de registro si no existe
+        # Create log table if it does not exist
         cursor.execute('''
         CREATE TABLE IF NOT EXISTS query_log (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -496,7 +496,7 @@ class QueryAnalyzer:
         )
         ''')
         
-        # Crear tabla de patrones detectados
+        # Create table of detected patterns
         cursor.execute('''
         CREATE TABLE IF NOT EXISTS query_patterns (
             pattern TEXT PRIMARY KEY,
@@ -514,7 +514,7 @@ class QueryAnalyzer:
         """Carga las plantillas predefinidas para consultas comunes."""
         templates = []
         
-        # Listar todos los registros de una tabla
+        # List all records in a table
         templates.append(
             QueryTemplate(
                 pattern="muestra todos los {table}",
@@ -524,7 +524,7 @@ class QueryAnalyzer:
             )
         )
         
-        # Contar registros
+        # Count records
         templates.append(
             QueryTemplate(
                 pattern="cuántos {table} hay",
@@ -534,7 +534,7 @@ class QueryAnalyzer:
             )
         )
         
-        # Buscar por ID
+        # Search by ID
         templates.append(
             QueryTemplate(
                 pattern="busca el {table} con id {value}",
@@ -544,7 +544,7 @@ class QueryAnalyzer:
             )
         )
         
-         # Listar ordenados
+         # List sorted
         templates.append(
             QueryTemplate(
                 pattern="lista los {table} ordenados por {field}",
@@ -554,7 +554,7 @@ class QueryAnalyzer:
             )
         )
         
-        # Buscar por email
+        # Search by email
         templates.append(
             QueryTemplate(
                 pattern="busca el usuario con email {value}",
@@ -564,7 +564,7 @@ class QueryAnalyzer:
             )
         )
         
-        # Contar por campo
+        # Count by field
         templates.append(
             QueryTemplate(
                 pattern="cuántos {table} hay por {field}",
@@ -574,7 +574,7 @@ class QueryAnalyzer:
             )
         )
         
-        # Contar usuarios activos
+        # Count active users
         templates.append(
             QueryTemplate(
                 pattern="cuántos usuarios activos hay",
@@ -585,7 +585,7 @@ class QueryAnalyzer:
             )
         )
         
-        # Listar usuarios por fecha de registro
+        # List users by registration date
         templates.append(
             QueryTemplate(
                 pattern="usuarios registrados en los últimos {number} días",
@@ -601,7 +601,7 @@ class QueryAnalyzer:
             )
         )
         
-        # Buscar empresas
+        # Search companies
         templates.append(
             QueryTemplate(
                 pattern="usuarios que tienen empresa",
@@ -617,7 +617,7 @@ class QueryAnalyzer:
             )
         )
         
-        # Buscar negocios
+        # Find businesses
         templates.append(
             QueryTemplate(
                 pattern="busca negocios en {value}",
@@ -632,7 +632,7 @@ class QueryAnalyzer:
             )
         )
         
-        # MongoDB: Listar documentos
+        # MongoDB: List documents
         templates.append(
             QueryTemplate(
                 pattern="muestra todos los documentos de {table}",
@@ -659,7 +659,7 @@ class QueryAnalyzer:
                 custom_templates = json.load(f)
                 
             for template_data in custom_templates:
-                # Crear plantilla desde datos JSON
+                # Create template from JSON data
                 template = QueryTemplate(
                     pattern=template_data.get("pattern", ""),
                     description=template_data.get("description", ""),
@@ -683,7 +683,7 @@ class QueryAnalyzer:
         Returns:
             True if saved successfully
         """
-        # Cargar plantillas existentes
+        # Load existing templates
         custom_templates = []
         if os.path.exists(self.template_path):
             try:
@@ -692,7 +692,7 @@ class QueryAnalyzer:
             except:
                 custom_templates = []
         
-        # Convertir plantilla a diccionario
+        # Convert template to dictionary
         template_data = {
             "pattern": template.pattern,
             "description": template.description,
@@ -701,22 +701,22 @@ class QueryAnalyzer:
             "applicable_tables": template.applicable_tables
         }
         
-        # Verificar si ya existe una plantilla con el mismo patrón
+        # Check if a template with the same pattern already exists
         for i, existing in enumerate(custom_templates):
             if existing.get("pattern") == template.pattern:
-                # Actualizar existente
+                # Update existing
                 custom_templates[i] = template_data
                 break
         else:
-            # Agregar nueva
+            # Add new
             custom_templates.append(template_data)
         
-        # Guardar plantillas
+        # Save templates
         try:
             with open(self.template_path, 'w') as f:
                 json.dump(custom_templates, f, indent=2)
             
-            # Actualizar lista de plantillas
+            # Update template list
             self.templates.append(template)
             
             return True
@@ -738,7 +738,7 @@ class QueryAnalyzer:
         for template in self.templates:
             matches, params = template.matches(query)
             if matches:
-                # Verificar si la plantilla es aplicable a las tablas existentes
+                # Check if the template is applicable to existing tables
                 if template.applicable_tables:
                     available_tables = set(db_schema.get("tables", {}).keys())
                     if not any(table in available_tables for table in template.applicable_tables):
@@ -761,10 +761,10 @@ class QueryAnalyzer:
             cost: Estimated cost of the query
             result_count: Number of results obtained
         """
-        # Detectar patrón
+        # Detect pattern
         pattern = self._detect_pattern(query)
         
-        # Registrar en la base de datos
+        # Register in the database
         conn = sqlite3.connect(self.query_log_path)
         cursor = conn.cursor()
         
@@ -776,7 +776,7 @@ class QueryAnalyzer:
             execution_time, cost, result_count, pattern
         ))
         
-        # Actualizar estadísticas de patrones
+        # Update pattern statistics
         if pattern:
             cursor.execute(
                 "SELECT count, avg_execution_time, avg_cost FROM query_patterns WHERE pattern = ?",
@@ -785,7 +785,7 @@ class QueryAnalyzer:
             result = cursor.fetchone()
             
             if result:
-                # Actualizar patrón existente
+                # Update existing pattern
                 count, avg_exec_time, avg_cost = result
                 new_count = count + 1
                 new_avg_exec_time = (avg_exec_time * count + execution_time) / new_count
@@ -797,7 +797,7 @@ class QueryAnalyzer:
                 WHERE pattern = ?
                 ''', (new_count, new_avg_exec_time, new_avg_cost, datetime.now().isoformat(), pattern))
             else:
-                # Insertar nuevo patrón
+                # Insert new pattern
                 cursor.execute('''
                 INSERT INTO query_patterns (pattern, count, avg_execution_time, avg_cost, last_updated)
                 VALUES (?, 1, ?, ?, ?)
@@ -818,20 +818,20 @@ class QueryAnalyzer:
         """
         normalized_query = query.lower()
         
-        # Comprobar patrones predefinidos
+        # Check predefined patterns
         for pattern in self.common_patterns:
             match = re.search(pattern, normalized_query)
             if match:
-                # Devolver el patrón con comodines
+                # Return the pattern with wildcards
                 entity = match.group(1)
                 return pattern.replace(r'(\w+)', f"{entity}")
         
-        # Si no se detecta ningún patrón predefinido, intentar generalizar
+        # If no predefined pattern is detected, try to generalize
         words = normalized_query.split()
         if len(words) < 3:
             return None
             
-        # Intentar generalizar consultas simples
+        # Try to generalize simple queries
         if "mostrar" in words or "muestra" in words or "listar" in words or "lista" in words:
             for i, word in enumerate(words):
                 if word in ["de", "los", "las", "todos", "todas"]:
@@ -885,36 +885,36 @@ class QueryAnalyzer:
         Returns:
             Suggested template or None
         """
-        # Detectar patrón
+        # Detect pattern
         pattern = self._detect_pattern(query)
         if not pattern:
             return None
             
-        # Generalizar la consulta SQL
+        # Generalize the SQL query
         generalized_sql = sql_query
         
-        # Reemplazar valores específicos con marcadores
-        # Esto es una simplificación, idealmente se usaría un parser SQL
+        # Replace specific values ​​with markers
+        # This is a simplification; ideally, you would use an SQL parser
         tokens = query.lower().split()
         
-        # Identificar posibles valores a parametrizar
+        # Identify possible values ​​to parameterize
         for i, token in enumerate(tokens):
             if token.isdigit():
-                # Reemplazar números
+                # Replace numbers
                 generalized_sql = re.sub(r'\b' + re.escape(token) + r'\b', '$1', generalized_sql)
                 pattern = pattern.replace(token, "{number}")
             elif '@' in token and '.' in token:
-                # Reemplazar emails
+                # Replace emails
                 generalized_sql = re.sub(r'\b' + re.escape(token) + r'\b', '$1', generalized_sql)
                 pattern = pattern.replace(token, "{value}")
             elif token.startswith('"') or token.startswith("'"):
                 # Reemplazar strings
                 value = token.strip('"\'')
-                if len(value) > 2:  # Evitar reemplazar strings muy cortos
+                if len(value) > 2:  # Avoid replacing very short strings
                     generalized_sql = re.sub(r'[\'"]' + re.escape(value) + r'[\'"]', "'$1'", generalized_sql)
                     pattern = pattern.replace(token, "{value}")
         
-        # Crear plantilla
+        # Create template
         return QueryTemplate(
             pattern=pattern,
             description=f"Plantilla generada automáticamente para: {pattern}",
@@ -931,11 +931,11 @@ class QueryAnalyzer:
         """
         suggestions = []
         
-        # Calcular estadísticas generales
+        # Calculate general statistics
         conn = sqlite3.connect(self.query_log_path)
         cursor = conn.cursor()
         
-        # Total de consultas y costo en los últimos 30 días
+        # Total consultations and cost in the last 30 days
         cursor.execute('''
         SELECT COUNT(*) as query_count, SUM(cost) as total_cost
         FROM query_log
@@ -947,7 +947,7 @@ class QueryAnalyzer:
             query_count, total_cost = row
             
             if query_count and query_count > 100:
-                # Si hay muchas consultas en total, sugerir plan de volumen
+                # If there are many queries in total, suggest volume plan
                 suggestions.append({
                     "type": "volume_plan",
                     "query_count": query_count,
@@ -955,7 +955,7 @@ class QueryAnalyzer:
                     "suggestion": f"Considerar negociar un plan por volumen. Actualmente ~{query_count} consultas/mes."
                 })
                 
-                # Sugerir ajustar el TTL del caché según frecuencia
+                # Suggest adjusting cache TTL based on frequency
                 avg_queries_per_day = query_count / 30
                 suggested_ttl = max(3600, min(86400 * 3, 86400 * (100 / avg_queries_per_day)))
                 
@@ -965,21 +965,21 @@ class QueryAnalyzer:
                     "suggestion": f"Ajustar TTL del caché a {suggested_ttl/3600:.1f} horas basado en su patrón de uso"
                 })
         
-        # Obtener patrones comunes
+        # Get common patterns
         common_patterns = self.get_common_patterns(10)
         
         for pattern in common_patterns:
             if pattern["count"] >= 5:
-                # Si un patrón se repite mucho, sugerir precompilación
+                # If a pattern repeats a lot, suggest precompilation
                 suggestions.append({
                     "type": "precompile",
                     "pattern": pattern["pattern"],
                     "count": pattern["count"],
-                    "estimated_savings": round(pattern["avg_cost"] * pattern["count"] * 0.9, 2),  # 90% de ahorro
+                    "estimated_savings": round(pattern["avg_cost"] * pattern["count"] * 0.9, 2),  # 90% savings
                     "suggestion": f"Crear una plantilla SQL para consultas del tipo '{pattern['pattern']}'"
                 })
             
-            # Si un patrón es costoso pero poco frecuente
+            # If a pattern is expensive but rare
             if pattern["avg_cost"] > 0.1 and pattern["count"] < 5:
                 suggestions.append({
                     "type": "analyze",
@@ -988,7 +988,7 @@ class QueryAnalyzer:
                     "suggestion": f"Revisar manualmente consultas del tipo '{pattern['pattern']}' para optimizar"
                 })
         
-        # Buscar períodos con alta carga para ajustar parámetros
+        # Find periods with high load to adjust parameters
         cursor.execute('''
         SELECT strftime('%Y-%m-%d %H', timestamp) as hour, COUNT(*) as count, SUM(cost) as total_cost
         FROM query_log
@@ -1000,7 +1000,7 @@ class QueryAnalyzer:
         
         for row in cursor.fetchall():
             hour, count, total_cost = row
-            if count > 20:  # Si hay más de 20 consultas en una hora
+            if count > 20:  # If there are more than 20 queries in an hour
                 suggestions.append({
                     "type": "load_balancing",
                     "hour": hour,
@@ -1009,7 +1009,7 @@ class QueryAnalyzer:
                     "suggestion": f"Alta carga de consultas detectada el {hour} ({count} consultas). Considerar técnicas de agrupación."
                 })
         
-        # Buscar consultas redundantes (misma consulta en corto tiempo)
+        # Find redundant queries (same query in a short time)
         cursor.execute('''
         SELECT query, COUNT(*) as count
         FROM query_log

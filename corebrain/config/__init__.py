@@ -6,5 +6,5 @@ and SDK preferences.
 """
 from .manager import ConfigManager
 
-# Exportación explícita de componentes públicos
+# Explicit export of public components
 __all__ = ['ConfigManager']

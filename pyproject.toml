@@ -34,7 +34,7 @@ dependencies = [
 
 [project.optional-dependencies]
 postgres = ["psycopg2-binary>=2.9.0"]
- = ["pymongo>=4.4.0"]
+mongodb = ["pymongo>=4.4.0"]
 mysql = ["mysql-connector-python>=8.0.23"]
 all_db = [
     "psycopg2-binary>=2.9.0",
