@@ -382,7 +382,6 @@ class ConfigManager:
                     _print_colored("Invalid configuration number.", "red")
             elif choice == "7":
                 try:
-                    self.validate_config(selected_api_key, config_id)
                     self.import_config(selected_api_key)
                 except (ValueError, IndexError):
                     _print_colored("Invalid configuration number.", "red")
@@ -392,6 +391,11 @@ class ConfigManager:
                 from corebrain.cli.config import configure_sdk
 
                 configure_sdk(api_token, api_key_selected, api_url, sso_url, user_data)
+                validate = (
+                input("Would you like to validate the modified config now? (y/n): ").strip().lower()
+                    )
+                if validate == "y":
+                    self.validate_config(api_key_selected, config_id)
 
             elif choice == "q":
                 print("Exit selected.")
@@ -478,13 +482,18 @@ class ConfigManager:
             with open(filepath, "r") as f:
                 config = json.load(f)
 
-            config_id = config.get("id") or str(uuid.uuid4())
+            config_id = config.get("id") or str(uuid.uuid4())   
             config["id"] = config_id
-
             self.add_config(api_key, config, config_id)
-            _print_colored(f"Configuration imported as {config_id}", "green")
-            return config_id
 
+        
+            _print_colored(f"Configuration imported as {config_id}", "green")
+            validate = (
+            input("Would you like to validate the modified config now? (y/n): ").strip().lower()
+                )
+            if validate == "y":
+                self.validate_config(api_key, config_id)
+            return config_id
         except Exception as e:
             _print_colored(f"Failed to import configuration: {e}", "red")
             return None
@@ -500,24 +509,24 @@ class ConfigManager:
         try:
             config = self.get_config(api_key, config_id)
             if not config:
-                print_colored(f"Configuration with ID '{config_id}' not found", "red")
+                _print_colored(f"Configuration with ID '{config_id}' not found", "red")
                 return 1
-            print_colored(
+            _print_colored(
                 f"✅ Validating configuration: {config_id}", "blue"
             )  # Create a temporary Corebrain instance to validate
             from corebrain.core.client import Corebrain
 
             try:
                 temp_client = Corebrain(api_key=api_key, db_config=config, skip_verification=True)
-                print_colored("✅ Configuration validation passed!", "green")
-                print_colored(f"Database type: {config.get('type', 'Unknown')}", "blue")
-                print_colored(f"Engine: {config.get('engine', 'Unknown')}", "blue")
+                _print_colored("✅ Configuration validation passed!", "green")
+                _print_colored(f"Database type: {config.get('type', 'Unknown')}", "blue")
+                _print_colored(f"Engine: {config.get('engine', 'Unknown')}", "blue")
                 return 0
             except Exception as validation_error:
-                print_colored(f"❌ Configuration validation failed: {str(validation_error)}", "red")
+                _print_colored(f"❌ Configuration validation failed: {str(validation_error)}", "red")
                 return 1
         except Exception as e:
-            print_colored(f"❌ Error during validation: {str(e)}", "red")
+            _print_colored(f"❌ Error during validation: {str(e)}", "red")
             return 1
 
     def remove_config(self, api_key_selected: str, config_id: str) -> bool:
