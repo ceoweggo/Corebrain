@@ -41,28 +41,42 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
         # Functions
         def authentication():
             sso_url = os.environ.get("COREBRAIN_SSO_URL") or DEFAULT_SSO_URL
-            sso_token, sso_user = authenticate_with_sso(sso_url)
-            if sso_token:
-                try:
-                    print_colored("✅ Returning SSO Token.", "green")
-                    print_colored(f"{sso_token}", "blue")
-                    print_colored("✅ Returning User data.", "green")
-                    print_colored(f"{sso_user}", "blue")
-
-                    # Saving api token
-                    api_key, user_data, api_token = get_api_credential(sso_token, DEFAULT_SSO_URL)
-                    save_api_token(api_key)
-                    print_colored("✅ API token saved.", "green")
-
-                    return sso_token, sso_user
-                
-                except Exception as e:
-                    print_colored("❌ Could not return SSO Token or SSO User data.", "red")
-                    return sso_token, sso_user
-                
+            api_key_selected, user_data, api_token = authenticate_with_sso_and_api_key_request(sso_url)
+        
+            if api_token:
+                save_api_token(api_token)
+                print_colored("✅ API token saved.", "green")
+                print_colored("✅ Returning User data.", "green")
+                print_colored(f"{user_data}", "blue")
+                return api_token, user_data
             else:
                 print_colored("❌ Could not authenticate with SSO.", "red")
                 return None, None
+            
+            # Previous authentication method that wasn't working (commented out for now)
+            #
+            # sso_url = os.environ.get("COREBRAIN_SSO_URL") or DEFAULT_SSO_URL
+            # sso_token, sso_user = authenticate_with_sso(sso_url)
+            # if sso_token:
+            #     try:
+            #         print_colored("✅ Returning SSO Token.", "green")
+            #         print_colored(f"{sso_token}", "blue")
+            #         print_colored("✅ Returning User data.", "green")
+            #         print_colored(f"{sso_user}", "blue")
+
+            #         # Saving api token
+            #         save_api_token(sso_token)
+            #         print_colored("✅ API token saved.", "green")
+
+            #         return sso_token, sso_user
+                
+            #     except Exception as e:
+            #         print_colored("❌ Could not return SSO Token or SSO User data.", "red")
+            #         return sso_token, sso_user
+                
+            # else:
+            #     print_colored("❌ Could not authenticate with SSO.", "red")
+            #     return None, None
 
         def authentication_with_api_key_return():
             sso_url = os.environ.get("COREBRAIN_SSO_URL") or DEFAULT_SSO_URL
@@ -497,7 +511,7 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
             
             if sso_token and sso_user:
                 print_colored("✅ Enter to create an user and API Key.", "green")
-                save_sso_token(sso_token)
+                save_api_token(sso_token)
                 print_colored("✅ SSO token saved.", "green")
                 
                 # Get API URL from environment or use default
