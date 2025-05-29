@@ -91,6 +91,7 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
         parser.add_argument("--check-status",action="store_true",help="Checks status of task")
         parser.add_argument("--authentication", action="store_true", help="Authenticate with SSO")
         parser.add_argument("--test-auth", action="store_true", help="Test SSO authentication system") # Is this command really useful?
+        parser.add_argument("--test-connection",action="store_true",help="Tests the connection to the Corebrain API using the provide credentials")
         parser.add_argument("--create-api-key", action="store_true", help="Create a new API Key")
         parser.add_argument("--key-name", help="Sets name of the new API Key")
         parser.add_argument("--key-level", choices=["read", "write", "admin"], default="read", help="Specifies access level for the new API Key")
@@ -100,7 +101,7 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
         parser.add_argument("--configure", action="store_true", help="Configure the Corebrain SDK")
         parser.add_argument("--list-configs", action="store_true", help="List available configurations")
         parser.add_argument("--show-schema", action="store_true", help="Display database schema for a configuration")
-        parser.add_argument("--woami",action="store_true",help="Display information about the current user")
+        parser.add_argument("--whoami",action="store_true",help="Display information about the current user")
         parser.add_argument("--gui", action="store_true", help="Check setup and launch the web interface")
         
         args = parser.parse_args(argv)
@@ -421,7 +422,47 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
             except Exception as e:
                 print_colored(f"❌ Error during test: {str(e)}", "red")
                 return 1
-        
+        if args.test_connection:
+            """
+            Test the connection to the Corebrain API using the provided credentials.
+            
+            This command verifies that the Corebrain SDK can successfully connect to the
+            Corebrain API server using the provided API key or token. It checks if the
+            API is reachable and responds correctly.
+
+            Usage: corebrain --test-connection [--api-key <key>] [--api-url <url>]
+            """
+            # Test connection to the Corebrain API
+            api_url = os.environ.get("COREBRAIN_API_URL", DEFAULT_API_URL)
+            sso_url = os.environ.get("COREBRAIN_SSO_URL", DEFAULT_SSO_URL)
+            
+            try:
+                # Retrieve API credentials
+                api_key, user_data, api_token = get_api_credential(sso_url)
+            except Exception as e:
+                # Handle errors while retrieving credentials
+                print_colored(f"Error while retrieving API credentials: {e}", "red")
+                return 1
+
+            if not api_key:
+                # If no API key is provided, print an error message
+                # and return an error code
+                print_colored(
+                    "Error: An API key is required. You can generate one at dashboard.corebrain.com.",
+                    "red"
+                )
+                return 1
+
+            try:
+                # Test the connection
+                # Import the test_connection function from the schema_file module
+                # and call it with the provided API key and URL
+                from corebrain.db.schema_file import test_connection
+                test_connection(api_key, api_url)
+                print_colored("Successfully connected to Corebrain API.", "green")
+            except Exception as e:
+                print_colored(f"Failed to connect to Corebrain API: {e}", "red")
+                return 1
 
         ## ** SDK ** ##
         
@@ -699,7 +740,7 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
                 management with confirmation prompts for destructive operations.
                 """
                 manager = ConfigManager()
-                manager.list_configs(api_key_selected)
+                manager.list_configs(api_key_selected,user_data,api_token)
 
             elif args.show_schema:
                 """
@@ -730,7 +771,7 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
                 Note: This command only reads schema information and doesn't modify
                 the database in any way. It's safe to run on production databases.
                 """
-                show_db_schema(api_key, args.config_id, api_url)
+                show_db_schema(api_key_selected, args.config_id, api_url)
 
 
 
@@ -901,7 +942,7 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
         #        return 1
 
 
-        if args.woami:
+        if args.whoami:
             """
             Display information about the currently authenticated user.
             
@@ -917,7 +958,7 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
             4. COREBRAIN_API_TOKEN environment variable
             5. SSO authentication (if no other credentials found)
             
-            Usage: corebrain --woami [--api-key <key>] [--token <token>] [--sso-url <url>]
+            Usage: corebrain --whoami [--api-key <key>] [--token <token>] [--sso-url <url>]
             
             Information displayed:
             - User ID and email

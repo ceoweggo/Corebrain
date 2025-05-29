@@ -1,0 +1,47 @@
+{
+  "type": "nosql",
+  "database": "baza2",
+  "tables": {
+    "test": {
+      "fields": [
+        {
+          "name": "test",
+          "type": "str"
+        },
+        {
+          "name": "test1",
+          "type": "str"
+        }
+      ],
+      "sample_data": [
+        {
+          "_id": "6836e4095b51d864a9263a34",
+          "test": "tak",
+          "test1": "shimon"
+        }
+      ]
+    }
+  },
+  "tables_list": [
+    {
+      "name": "test",
+      "fields": [
+        {
+          "name": "test",
+          "type": "str"
+        },
+        {
+          "name": "test1",
+          "type": "str"
+        }
+      ],
+      "sample_data": [
+        {
+          "_id": "6836e4095b51d864a9263a34",
+          "test": "tak",
+          "test1": "shimon"
+        }
+      ]
+    }
+  ]
+}
