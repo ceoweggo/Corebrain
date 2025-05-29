@@ -1,106 +1,211 @@
-# Corebrain
+# Corebrain SDK
 
-![Version](https://img.shields.io/badge/version-0.1.0-blue)
-![Status](https://img.shields.io/badge/status-alpha-orange)
-![License](https://img.shields.io/badge/license-MIT-green)
+![CI Status](https://github.com/ceoweggo/Corebrain/workflows/Corebrain%20SDK%20CI/CD/badge.svg)
+[![PyPI version](https://badge.fury.io/py/corebrain.svg)](https://badge.fury.io/py/corebrain)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## What is Corebrain?
+SDK for natural language queries to relational and non-relational databases. Enables interaction with databases using natural language questions.
 
-Corebrain is an open-source enterprise solution designed to centralize and optimize corporate data management. The project offers a scalable architecture for processing, analyzing, and visualizing critical information for decision-making.
+## ✨ Features
 
-**IMPORTANT NOTE**: In the current version (0.1.0-alpha), only the SQL code is functional. Other modules are under development.
+- **Natural Language Queries**: Transforms human language questions into database queries (SQL/NoSQL)
+- **Multi-Database Support**: Compatible with SQLite, MySQL, PostgreSQL, and MongoDB
+- **Unified Interface**: Consistent API across different database types
+- **Built-in CLI**: Interact with your databases directly from the terminal
+- **Strong Security**: Robust authentication and secure credential management
+- **Highly Extensible**: Designed for easy integration with new engines and features
+- **Comprehensive Documentation**: Usage examples, API reference, and step-by-step guides
 
-## Current Status
+## 📋 Requirements
 
-- ✅ SQL queries for data extraction
-- ✅ Database schemas
-- ✅ Authentication service
-- ❌ NoSQL (in development)
-- ❌ Frontend (in development)
-- ❌ REST API (in development)
+- Python 3.8+
+- Specific dependencies based on the database engine:
+  - **SQLite**: Included in Python
+  - **PostgreSQL**: `psycopg2-binary`
+  - **MySQL**: `mysql-connector-python`
+  - **MongoDB**: `pymongo`
 
-## SDK Integration
-Corebrain provides SDKs for multiple programming languages, making it easy to integrate with your existing systems. While only SQL in Python functionality is currently available, this SDK will support all features and most common languages as they are developed.
+## 🔧 Installation
 
-![Python](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10-blue)
+### From PyPI (recommended)
 
-## Available Versions
+```bash
+# Minimal installation
+pip install corebrain
 
-- **`main` Branch**: Stable version with verified functionality (currently only SQL is functional)
-- **`pre-release` Branch**: Initial version with all features in development (may contain errors)
+### From source code
 
-## Getting Started
+```bash
 
-### Installation
+git clone https://github.com/ceoweggo/Corebrain.git 
+git submodule update --init --recursive
+pip install -e .
+
+```
+
+## 🚀 Quick Start Guide
+
+### Initialization
+
+> **⚠️ IMPORTANT:**  
+> * If you don't have an existing configuration, first run `corebrain --configure`
+> * If you need to generate a new API key, use `corebrain --create`
+> * Never share your API key in public repositories. Use environment variables instead.
+
+
+```python
+from corebrain import init
+
+# Initialize with a previously saved configuration
+corebrain = init(
+    api_key="your_api_key",
+    config_id="your_config_id"
+)
+```
+
+### Making Natural Language Queries
+
+```python
+# Simple query
+result = client.ask("How many active users are there?")
+print(result["explanation"])  # Natural language explanation
+print(result["query"])        # Generated SQL/NoSQL query
+print(result["results"])      # Query results
+
+# Query with additional parameters
+result = client.ask(
+    "Show the last 5 orders", 
+    collection_name="orders",
+    limit=5,
+    filters={"status": "completed"}
+)
+
+# Iterate over the results
+for item in result["results"]:
+    print(item)
+```
+
+### Getting the Database Schema
+
+```python
+# Get the complete schema
+schema = client.db_schema
+
+# List all tables/collections
+tables = client.list_collections_name()
+print(tables)
+```
+
+### Closing the Connection
+
+```python
+# It's recommended to close the connection when finished
+client.close()
+
+# Or use the with context
+with init(api_key="your_api_key", config_id="your_config_id") as client:
+    result = client.ask("How many users are there?")
+    print(result["explanation"])
+```
+
+## 🖥️ Command Line Interface Usage
+
+### Configure Connection
+
+```bash
+# Init configuration
+corebrain --configure
+```
+
+### Display Database Schema
+
+```bash
+# Show complete schema
+corebrain --show-schema
+```
+
+### List Configurations
+
+```bash
+# List all configurations
+corebrain --list-configs
+```
+
+## 📝 Advanced Documentation
+
+### Configuration Management
+
+```python
+from corebrain import list_configurations, remove_configuration, get_config
+
+# List all configurations
+configs = list_configurations(api_token="your_api_token")
+print(configs)
+
+# Get details of a configuration
+config = get_config(api_token="your_api_token", config_id="your_config_id")
+print(config)
+
+# Remove a configuration
+removed = remove_configuration(api_token="your_api_token", config_id="your_config_id")
+print(f"Configuration removed: {removed}")
+```
+
+## 🧪 Testing and Development
+
+### Development Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-organization/corebrain.git
-
-# Enter the directory
+git clone https://github.com/ceoweggo/Corebrain.git
 cd corebrain
 
-# Install dependencies
-npm install
+# Install in development mode with extra tools
+
+# On Windows (use powershell)
+.\setup.ps1
+
+# On Linux/macOS (use bash)
+./setup.sh
 ```
 
-### Configuration
-
-1. Use `corebrain --configure` to start the configuration.
-2. Once configuration has been completed, copy the config_id and replace in your example code (see 'examples' folder).
-3. Run the example code in Python and enjoy!
-
-### Basic Usage
+### Verifying Style and Typing
 
 ```bash
-# Run SQL migrations
-npm run migrate
+# Check style with flake8
+flake8 .
 
-# Start the SQL service
-npm run sql:start
+# Check typing with mypy
+mypy core db cli utils
+
+# Format code with black
+black .
 ```
 
-## Accessing the Pre-release Version
+### Continuous Integration and Deployment (CI/CD)
 
-If you want to test all features under development (including unstable components), you can switch to the pre-release branch:
+The project uses GitHub Actions to automate:
 
-```bash
-git checkout pre-release
-npm install
-```
+1. **Testing**: Runs tests on multiple Python versions (3.8-3.11)
+2. **Quality Verification**: Checks style, typing, and formatting
+3. **Coverage**: Generates code coverage reports
+4. **Automatic Publication**: Publishes new versions to PyPI when tags are created
+5. **Docker Images**: Builds and publishes Docker images with each version
 
-**Warning**: The pre-release version contains experimental features with bugs or unexpected behaviors. Not recommended for production environments.
+You can see the complete configuration in `.github/workflows/ci.yml`.
 
-## Contributing
+## 🛠️ Contributions
 
-Corebrain is an open-source project, and we welcome all contributions. To contribute:
+Contributions are welcome! To contribute:
 
 1. Fork the repository
-2. Create a new branch (`git checkout -b feature/new-feature`)
-3. Make your changes
-4. Run tests (`npm test`)
-5. Commit your changes (`git commit -m 'Add new feature'`)
-6. Push to your fork (`git push origin feature/new-feature`)
-7. Open a Pull Request
+2. Create a branch for your feature (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-Please read our [contribution guidelines](CONTRIBUTING.md) before you start.
+Please make sure your changes pass all tests and comply with the style guidelines.
 
-## Roadmap
+## 📄 License
 
-- **0.1.0**: Basic SQL operation. OpenAI connected. Authentication service Globodain SSO integrated. API Keys configuration integrated. 
-- **0.2.0**: NoSQL (MongoDB) fixed. API Key creation by command "Corebrain --configure". Functional version.
-- **0.3.0**: API deployment and integration at source. Functional version for third parties.
-...
-- **1.0.0**: First stable version with all features.
-
-You can see the full report at [Project Roadmap](https://github.com/users/ceoweggo/projects/4/views/2)
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Contact
-
-- **Email**: [ruben@globodain.com](mailto:ruben@globodain.com)
-- **Issues**: [Report a problem](https://github.com/ceoweggo/corebrain/issues)
-
+Distributed under the MIT License. See `LICENSE` for more information.
