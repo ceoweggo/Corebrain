@@ -352,6 +352,7 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
             Note: This command only authenticates but doesn't save credentials for future use.
             """
             authentication()
+            return 0
             
         if args.test_auth:
             """
@@ -413,6 +414,7 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
             except Exception as e:
                 print_colored(f"❌ Error during test: {str(e)}", "red")
                 return 1
+
         if args.test_connection:
             """
             Test the connection to the Corebrain API using the provided credentials.
@@ -451,6 +453,7 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
                 from corebrain.db.schema_file import test_connection
                 test_connection(api_key, api_url)
                 print_colored("Successfully connected to Corebrain API.", "green")
+                return 0
             except Exception as e:
                 print_colored(f"Failed to connect to Corebrain API: {e}", "red")
                 return 1
@@ -630,6 +633,7 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
                 - Internet connectivity for API synchronization
                 """
                 configure_sdk(api_token, api_key_selected, api_url, sso_url, user_data)
+                return 0
 
             elif args.list_configs:
                 """
@@ -730,6 +734,7 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
                 """
                 manager = ConfigManager()
                 manager.list_configs(api_key_selected,user_data,api_token)
+                return 0
 
             elif args.show_schema:
                 """
@@ -761,175 +766,7 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
                 the database in any way. It's safe to run on production databases.
                 """
                 show_db_schema(api_key_selected, args.config_id, api_url)
-
-
-
-        # ** move to the config manager --> inside of the command --list-configs **
-
-        # Handle validate-config and export-config commands
-        #if args.validate_config:
-            """
-            Validate a saved configuration without executing any operations.
-            
-            This command performs comprehensive validation of a database configuration
-            to ensure it's correctly formatted and all required parameters are present.
-            It checks the configuration syntax, required fields, and optionally tests
-            the database connection.
-            
-            Validation checks performed:
-            1. Configuration format and structure
-            2. Required fields presence (type, engine, credentials)
-            3. Field value validity (ports, hostnames, database names)
-            4. Database connection test (optional)
-            5. Authentication and permissions verification
-            
-            Usage: corebrain --validate-config --config-id <id> [--api-key <key>]
-            
-            Validation levels:
-            - Structure: Validates configuration format and required fields
-            - Connection: Tests actual database connectivity
-            - Permissions: Verifies database access permissions
-            - Schema: Checks if the database schema can be read
-            
-            Exit codes:
-            - 0: Configuration is valid
-            - 1: Configuration has errors
-            
-            Use cases:
-            - Verify configuration before deployment
-            - Troubleshoot connection issues
-            - Validate imported configurations
-            - Check configuration after database changes
-            
-            Note: This command requires a valid API key to access saved configurations.
-            """
-        #    if not args.config_id:
-        #        print_colored("Error: --config-id is required for validation", "red")
-        #        return 1
-            
-            # Get credentials
-        #    api_url = os.environ.get("COREBRAIN_API_URL") or DEFAULT_API_URL
-        #    sso_url = os.environ.get("COREBRAIN_SSO_URL") or DEFAULT_SSO_URL
-        #    token_arg = args.api_key if args.api_key else args.token
-        #    api_key, user_data, api_token = get_api_credential(token_arg, sso_url)
-            
-        #    if not api_key:
-        #        print_colored("Error: An API Key is required. Use --api-key or login via --login", "red")
-        #        return 1
-            
-            # Validate the configuration
-        #    try:
-        #        config_manager = ConfigManager()
-        #        config = config_manager.get_config(api_key, args.config_id)
-                
-        #        if not config:
-        #            print_colored(f"Configuration with ID '{args.config_id}' not found", "red")
-        #            return 1
-                
-        #        print_colored(f"✅ Validating configuration: {args.config_id}", "blue")
-                
-                # Create a temporary Corebrain instance to validate
-        #        from corebrain.core.client import Corebrain
-        #        try:
-        #            temp_client = Corebrain(
-        #                api_key=api_key,
-        #                db_config=config,
-        #                skip_verification=True
-        #            )
-        #            print_colored("✅ Configuration validation passed!", "green")
-        #            print_colored(f"Database type: {config.get('type', 'Unknown')}", "blue")
-        #            print_colored(f"Engine: {config.get('engine', 'Unknown')}", "blue")
-        #            return 0
-        #        except Exception as validation_error:
-        #            print_colored(f"❌ Configuration validation failed: {str(validation_error)}", "red")
-        #            return 1
-                    
-        #    except Exception as e:
-        #        print_colored(f"❌ Error during validation: {str(e)}", "red")
-        #        return 1
-
-        #if args.export_config:
-            """
-            Export a saved configuration to a JSON file.
-            
-            This command exports a database configuration from the local storage
-            to a JSON file that can be shared, backed up, or imported on another system.
-            The exported file contains all connection parameters and settings needed
-            to recreate the configuration.
-            
-            The export process:
-            1. Retrieves the specified configuration from local storage
-            2. Decrypts sensitive information (if encrypted)
-            3. Formats the configuration as readable JSON
-            4. Saves to the specified output file
-            5. Optionally removes sensitive data for sharing
-            
-            Usage: corebrain --export-config --config-id <id> [--output-file <path>] [--api-key <key>]
-            
-            Options:
-            --config-id: ID of the configuration to export (required)
-            --output-file: Path for the exported file (default: config_<id>.json)
-            --remove-credentials: Remove sensitive data for sharing (optional)
-            --pretty-print: Format JSON with indentation for readability
-            
-            Exported data includes:
-            - Database connection parameters
-            - Engine and type information
-            - Configuration metadata
-            - Excluded tables/collections list
-            - Custom settings and preferences
-            
-            Security considerations:
-            - Exported files may contain sensitive credentials
-            - Use --remove-credentials flag when sharing configurations
-            - Store exported files in secure locations
-            - Consider encrypting exported files for transmission
-            
-            Use cases:
-            - Backup configurations before changes
-            - Share configurations between team members
-            - Migrate configurations to different environments
-            - Create configuration templates
-            - Document database connection settings
-            """
-        #    if not args.config_id:
-        #        print_colored("Error: --config-id is required for export", "red")
-        #        return 1
-                
-            # Get credentials
-        #    api_url = os.environ.get("COREBRAIN_API_URL") or DEFAULT_API_URL
-        #    sso_url = os.environ.get("COREBRAIN_SSO_URL") or DEFAULT_SSO_URL
-        #    token_arg = args.api_key if args.api_key else args.token
-        #    api_key, user_data, api_token = get_api_credential(token_arg, sso_url)
-            
-        #    if not api_key:
-        #        print_colored("Error: An API Key is required. Use --api-key or login via --login", "red")
-        #        return 1
-            
-            # Export the configuration
-        #    try:
-        #        config_manager = ConfigManager()
-        #        config = config_manager.get_config(api_key, args.config_id)
-                
-        #        if not config:
-        #            print_colored(f"Configuration with ID '{args.config_id}' not found", "red")
-        #            return 1
-                
-                # Generate output filename if not provided
-        #        output_file = getattr(args, 'output_file', None) or f"config_{args.config_id}.json"
-                
-                # Export to file
-        #        import json
-        #        with open(output_file, 'w', encoding='utf-8') as f:
-        #            json.dump(config, f, indent=2, default=str)
-                
-        #        print_colored(f"✅ Configuration exported to: {output_file}", "green")
-        #        return 0
-                
-        #    except Exception as e:
-        #        print_colored(f"❌ Error exporting configuration: {str(e)}", "red")
-        #        return 1
-
+                return 0
 
         if args.whoami:
             """
@@ -1101,12 +938,12 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
             url = "http://localhost:5173/"
             print_colored(f"GUI: {url}", "cyan")
             webbrowser.open(url)
-    
+            return 0
 
         else:
             # If no option was specified, show help
             parser.print_help()
-            print_colored("\nTip: Use 'corebrain --login' to login via SSO.", "blue")
+            print_colored("\nTip: Use 'corebrain --authentication' to login via SSO.", "blue")
         
         return 0
     except Exception as e:
