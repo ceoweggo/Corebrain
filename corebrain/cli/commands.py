@@ -84,7 +84,6 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
         parser.add_argument("--version", action="store_true", help="Show SDK version")
         parser.add_argument("--check-status",action="store_true",help="Checks status of task")
         parser.add_argument("--authentication", action="store_true", help="Authenticate with SSO")
-        parser.add_argument("--test-auth", action="store_true", help="Test SSO authentication system") # Is this command really useful? 
         parser.add_argument("--test-connection",action="store_true",help="Tests the connection to the Corebrain API using the provide credentials")
 
         # Arguments to use the SDK
@@ -353,67 +352,6 @@ def main_cli(argv: Optional[List[str]] = None) -> int:
             """
             authentication()
             return 0
-            
-        if args.test_auth:
-            """
-            Test the SSO (Single Sign-On) authentication system.
-            
-            This command performs a comprehensive test of the SSO authentication flow
-            without saving any credentials or performing any actual operations. It's useful
-            for diagnosing authentication issues and verifying that the SSO system is working.
-            
-            The test process:
-            1. Configures the SSO authentication client
-            2. Generates a login URL
-            3. Opens the browser for user authentication
-            4. Waits for user to complete the authentication process
-            5. Reports success or failure
-            
-            Usage: corebrain --test-auth [--sso-url <url>]
-            
-            What it tests:
-            - SSO server connectivity
-            - Client configuration validity
-            - Authentication flow completion
-            - Browser integration
-            
-            Note: This is a diagnostic tool and doesn't save any authentication data.
-            For actual login, use --login instead.
-            """
-            sso_url = os.environ.get("COREBRAIN_SSO_URL") or DEFAULT_SSO_URL
-            
-            print_colored("Testing SSO authentication...", "blue")
-            
-            # Authentication configuration
-            auth_config = {
-                'GLOBODAIN_SSO_URL': sso_url,
-                'GLOBODAIN_CLIENT_ID': SSO_CLIENT_ID,
-                'GLOBODAIN_CLIENT_SECRET': SSO_CLIENT_SECRET,
-                'GLOBODAIN_REDIRECT_URI': f"http://localhost:{DEFAULT_PORT}/auth/sso/callback",
-                'GLOBODAIN_SUCCESS_REDIRECT': f"http://localhost:{DEFAULT_PORT}/auth/sso/callback"
-            }
-            
-            try:
-                # Instantiate authentication client
-                sso_auth = GlobodainSSOAuth(config=auth_config)
-                
-                # Get login URL
-                login_url = sso_auth.get_login_url()
-                
-                print_colored(f"Login URL: {login_url}", "blue")
-                print_colored("Opening browser for login...", "blue")
-                
-                # Open browser
-                webbrowser.open(login_url)
-                
-                print_colored("Please complete the login process in the browser.", "blue")
-                input("\nPress Enter when you've completed the process or to cancel...")
-                
-                print_colored("✅ SSO authentication test completed!", "green")
-                return 0
-            except Exception as e:
-                print_colored(f"❌ Error during test: {str(e)}", "red")
-                return 1
 
         if args.test_connection:
             """
